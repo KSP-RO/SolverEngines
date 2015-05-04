@@ -33,6 +33,9 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
     [KSPField]
     public bool useZaxis = true;
 
+    [KSPField]
+    public bool useExtTemp = false;
+
     // Testflight interaction
     public double flowMult = 1d;
     public double ispMult = 1d;
@@ -153,7 +156,7 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
                 UpdateInletEffects();
                 requestedThrottle = vessel.ctrlState.mainThrottle;
                 UpdateThrottle();
-                UpdateFlightCondition(vessel.altitude, vessel.srfSpeed, vessel.staticPressurekPa, vessel.externalTemperature);
+                UpdateFlightCondition(vessel.altitude, vessel.srfSpeed, vessel.staticPressurekPa, useExtTemp ? vessel.externalTemperature : vessel.atmosphericTemperature);
                 CalculateEngineParams();
 
                 if (fireflag >= 0.79999d)
