@@ -66,13 +66,13 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
     virtual public void CreateEngine()
     {
         engineSolver = new EngineSolver();
-        Need_Area = engineSolver.GetArea();
     }
 
     virtual public void Start()
     {
         useAtmCurve = atmChangeFlow = useVelCurve = false;
         CreateEngine();
+        Need_Area = engineSolver.GetArea();
 
         List<Part> parts = null;
         engineList = new List<ModuleEnginesSolver>();
@@ -176,8 +176,11 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
                 }
                 else
                 {
-                    part.stackIcon.RemoveInfo(overheatBox);
-                    overheatBox = null;
+                    if (overheatBox != null)
+                    {
+                        part.stackIcon.RemoveInfo(overheatBox);
+                        overheatBox = null;
+                    }
                 }
 
                 if (finalThrust > 0f)
@@ -192,7 +195,7 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
                         {
                             t = thrustTransforms[i];
                             Vector3 axis = useZaxis ? -t.forward : -t.up;
-                            part.Rigidbody.AddForceAtPosition(thrustRot * axis * thrustPortion, t.position + t.rotation * thrustOffset, ForceMode.Force);
+                            part.Rigidbody.AddForceAtPosition(thrustRot * (axis * thrustPortion), t.position + t.rotation * thrustOffset, ForceMode.Force);
                         }
                     }
                     EngineExhaustDamage();
