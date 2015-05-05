@@ -30,6 +30,9 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
     [KSPField(isPersistant = false)]
     public double thrustUpperLimit = double.MaxValue;
 
+    [KSPField(isPersistant = false)]
+    public bool multiplyThrustByFuelFrac = true;
+
     [KSPField]
     public bool useZaxis = true;
 
@@ -47,8 +50,11 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
     [KSPField(isPersistant = false, guiActive = true, guiName = "Eng. Internal Temp")]
     public string engineTempString;
     // internals
-    protected double fireflag = 0d, engineTemp = 288.15d;
+    protected double tempRatio = 0d, engineTemp = 288.15d;
+    protected double lastPropellantFraction = 1d;
     protected VInfoBox overheatBox = null;
+
+    protected List<ModuleAnimateEmissive> emissiveAnims;
 
 
     // protected internals
@@ -104,6 +110,13 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
         // set initial params
         engineTemp = 288.15d;
         currentThrottle = 0f;
+
+        // Get emissives
+        emissiveAnims = new List<ModuleAnimateEmissive>();
+        int mCount = part.Modules.Count;
+        for (int i = 0; i < mCount; ++i)
+            if (part.Modules[i] is ModuleAnimateEmissive)
+                emissiveAnims.Add(part.Modules[i] as ModuleAnimateEmissive);
     }
 
     public override void OnLoad(ConfigNode node)
@@ -147,96 +160,50 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
             partsCount = newCount;
             GetLists(parts);
         }
+            
+        UpdateInletEffects();
+        requestedThrottle = vessel.ctrlState.mainThrottle;
+        UpdateThrottle();
+        UpdateFlightCondition(vessel.altitude, vessel.srfSpeed, vessel.staticPressurekPa, useExtTemp ? vessel.externalTemperature : vessel.atmosphericTemperature, vessel.mainBody.atmosphereContainsOxygen);
+        CalculateEngineParams();
+        UpdateTemp();
 
-        if (EngineIgnited)
+        if (finalThrust > 0f)
         {
-            UpdatePropellantStatus();
-            if (vessel.mainBody.atmosphereContainsOxygen && vessel.altitude <= vessel.mainBody.atmosphereDepth)
+            // now apply the thrust
+            if (part.Rigidbody != null)
             {
-                UpdateInletEffects();
-                requestedThrottle = vessel.ctrlState.mainThrottle;
-                UpdateThrottle();
-                UpdateFlightCondition(vessel.altitude, vessel.srfSpeed, vessel.staticPressurekPa, useExtTemp ? vessel.externalTemperature : vessel.atmosphericTemperature);
-                CalculateEngineParams();
-
-                if (fireflag >= 0.79999d)
+                int tCount = thrustTransforms.Count;
+                float thrustPortion = finalThrust / tCount;
+                Transform t;
+                for (int i = 0; i < tCount; ++i)
                 {
-                    if (fireflag > 1d)
-                    {
-                        FlightLogger.eventLog.Add("[" + FormatTime(vessel.missionTime) + "] " + part.partInfo.title + " melted its internals from heat.");
-                        part.explode();
-                    }
-                    if (overheatBox == null)
-                    {
-                        overheatBox = part.stackIcon.DisplayInfo();
-                        overheatBox.SetMsgBgColor(XKCDColors.DarkRed.A(0.6f));
-                        overheatBox.SetMsgTextColor(XKCDColors.OrangeYellow.A(0.6f));
-                        overheatBox.SetMessage("Eng. Int.");
-                        overheatBox.SetProgressBarBgColor(XKCDColors.DarkRed.A(0.6f));
-                        overheatBox.SetProgressBarColor(XKCDColors.OrangeYellow.A(0.6f));
-                    }
-                    overheatBox.SetValue((float)fireflag * 2f - 1f, 0.6f, 1.0f);
-                }
-                else
-                {
-                    if (overheatBox != null)
-                    {
-                        part.stackIcon.RemoveInfo(overheatBox);
-                        overheatBox = null;
-                    }
-                }
-
-                if (finalThrust > 0f)
-                {
-                    // now apply the thrust
-                    if (part.Rigidbody != null)
-                    {
-                        int tCount = thrustTransforms.Count;
-                        float thrustPortion = finalThrust / tCount;
-                        Transform t;
-                        for (int i = 0; i < tCount; ++i)
-                        {
-                            t = thrustTransforms[i];
-                            Vector3 axis = useZaxis ? -t.forward : -t.up;
-                            part.Rigidbody.AddForceAtPosition(thrustRot * (axis * thrustPortion), t.position + t.rotation * thrustOffset, ForceMode.Force);
-                        }
-                    }
-                    EngineExhaustDamage();
-
-                    double thermalFlux = fireflag * heatProduction * vessel.VesselValues.HeatProduction.value * PhysicsGlobals.InternalHeatProductionFactor * part.thermalMass;
-                    part.AddThermalFlux(thermalFlux);
+                    t = thrustTransforms[i];
+                    Vector3 axis = useZaxis ? -t.forward : -t.up;
+                    part.Rigidbody.AddForceAtPosition(thrustRot * (axis * thrustPortion), t.position + t.rotation * thrustOffset, ForceMode.Force);
                 }
             }
-            else
-            {
-                Flameout("No oxygen");
-            }
-        }
-        else
-        {
+            EngineExhaustDamage();
 
-            // Update Gui information
-            Events["Shutdown"].active = false;
-            Events["Activate"].active = true;
-            fuelFlowGui = 0f; // No fuel is flowing, zero out gui values
-            realIsp = 0f;
-            finalThrust = 0f;
-
-            if (part.ShieldedFromAirstream)
-            {
-                status = "Occluded";
-            }
-            else
-            {
-                status = "Off";
-            }
-            statusL2 = "";
+            double thermalFlux = tempRatio * heatProduction * vessel.VesselValues.HeatProduction.value * PhysicsGlobals.InternalHeatProductionFactor * part.thermalMass;
+            part.AddThermalFlux(thermalFlux);
         }
         FXUpdate();
         if (flameout || !EngineIgnited)
         {
             SetFlameout();
         }
+    }
+
+    virtual protected void UpdateTemp()
+    {
+        if (tempRatio > 1d)
+        {
+            FlightLogger.eventLog.Add("[" + FormatTime(vessel.missionTime) + "] " + part.partInfo.title + " melted its internals from heat.");
+            part.explode();
+        }
+        else
+            UpdateOverheatBox(tempRatio, 0.8d, 2f);
     }
 
     //ferram4: separate out so function can be called separately for editor sims
@@ -284,41 +251,39 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
         actualThrottle = Mathf.RoundToInt(currentThrottle * 100f);
     }
 
-    virtual public void UpdateFlightCondition(double altitude, double vel, double pressure, double temperature)
+    virtual public void UpdateFlightCondition(double altitude, double vel, double pressure, double temperature, bool oxygen)
     {
-        Environment = pressure.ToString("N2") + " kPa;" + temperature.ToString("N2") + " K ";
+        Environment = pressure.ToString("N2") + " kPa; " + temperature.ToString("N2") + " K ";
 
         engineSolver.SetTPR(OverallTPR);
-        engineSolver.CalculatePerformance(pressure, temperature, vel, Arearatio, currentThrottle, flowMult, ispMult);
+        engineSolver.SetEngineState(EngineIgnited, lastPropellantFraction);
+        engineSolver.SetFreestream(altitude, pressure, temperature, vel, oxygen);
+        engineSolver.CalculatePerformance(Arearatio, currentThrottle, flowMult, ispMult);
     }
 
     virtual public void CalculateEngineParams()
     {
-        if (!engineSolver.CanThrust())//ramjet check
-        {
-            Flameout("Speed too low");
-            return;
-        }
+        SetEmissive(engineSolver.GetEmissive());
         // Heat
         engineTemp = engineSolver.GetEngineTemp();
-        fireflag = engineTemp / maxEngineTemp;
+        tempRatio = engineTemp / maxEngineTemp;
         engineTempString = engineTemp.ToString("N0") + " K / " + maxEngineTemp.ToString("n0") + " K";
 
+        if (EngineIgnited) // slow, so only do this if we have to.
+            UpdatePropellantStatus();
 
         double thrustIn = engineSolver.GetThrust(); //in N
         double isp = engineSolver.GetIsp();
         double producedThrust = 0d;
         double fuelFlow = engineSolver.GetFuelFlow();
         double massFlow = 0d;
-        double propellantRecieved = 0d;
 
         if (thrustIn <= 0d || double.IsNaN(thrustIn))
         {
-            if (currentThrottle > 0f && !double.IsNaN(thrustIn))
+            if (EngineIgnited && !double.IsNaN(thrustIn))
             {
-                Flameout("Air combustion failed");
+                Flameout(engineSolver.GetStatus());
             }
-            propellantRecieved = 0d;
             realIsp = 0f;
             fuelFlowGui = 0f;
             producedThrust = 0d;
@@ -335,31 +300,37 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
 
             if (CheatOptions.InfiniteFuel == true)
             {
-                propellantRecieved = 1d;
+                lastPropellantFraction = 1d;
                 UnFlameout();
             }
             else
             {
-                propellantRecieved = RequestPropellant(massFlow);
+                lastPropellantFraction = RequestPropellant(massFlow);
             }
 
-            producedThrust = thrustIn * propellantRecieved * 0.001d; // to kN
-
-            fuelFlowGui = (float)(fuelFlow * propellantRecieved);
-            if (fuelFlowGui > 1000f)
+            // set produced thrust
+            if (multiplyThrustByFuelFrac)
             {
-                fuelFlowGui *= 0.001f;
-                Fields["fuelFlowGui"].guiUnits = " ton/sec";
+                thrustIn *= lastPropellantFraction;
+                fuelFlow *= lastPropellantFraction;
             }
-            else
-                Fields["fuelFlowGui"].guiUnits = " kg/sec";
-
-
-            realIsp = (float)isp;
-
+            producedThrust = thrustIn * 0.001d; // to kN
             // soft cap
             if (producedThrust > thrustUpperLimit)
                 producedThrust = thrustUpperLimit + (producedThrust - thrustUpperLimit) * 0.1d;
+            
+            // set fuel flow
+            if (fuelFlow > 1000d)
+            {
+                fuelFlow *= 0.001d;
+                Fields["fuelFlowGui"].guiUnits = " ton/s";
+            }
+            else
+                Fields["fuelFlowGui"].guiUnits = " kg/s";
+            fuelFlowGui = (float)fuelFlow;
+
+
+            realIsp = (float)isp;
         }
 
         finalThrust = (float)producedThrust * vessel.VesselValues.EnginePower.value;
@@ -378,7 +349,7 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
     }
     new virtual public string GetModuleTitle()
     {
-        return "AJE Engine";
+        return "EngineSolver Engine";
     }
     new virtual public string GetPrimaryField()
     {
@@ -387,7 +358,7 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
 
     public override string GetInfo()
     {
-        return "AJE Engine";
+        return "<b>Unconfigured</b>";
     }
 
     #endregion
@@ -405,6 +376,13 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
         flameoutBar = 0f;
     }
 
+    protected void SetEmissive(double val)
+    {
+        int eCount = emissiveAnims.Count;
+        for (int i = 0; i < eCount; ++i)
+            emissiveAnims[i].SetState(val);
+    }
+
     protected void GetLists(List<Part> parts)
     {
         engineList.Clear();
@@ -420,6 +398,32 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
                     engineList.Add(m as ModuleEnginesSolver);
                 if (m is AJEInlet)
                     inletList.Add(m as AJEInlet);
+            }
+        }
+    }
+    protected void UpdateOverheatBox(double val, double minVal, float scalar)
+    {
+        if (val >= (minVal - 0.00001d))
+        {
+            if (overheatBox == null)
+            {
+                overheatBox = part.stackIcon.DisplayInfo();
+                overheatBox.SetMsgBgColor(XKCDColors.DarkRed.A(0.6f));
+                overheatBox.SetMsgTextColor(XKCDColors.OrangeYellow.A(0.6f));
+                overheatBox.SetMessage("Eng. Int.");
+                overheatBox.SetProgressBarBgColor(XKCDColors.DarkRed.A(0.6f));
+                overheatBox.SetProgressBarColor(XKCDColors.OrangeYellow.A(0.6f));
+            }
+            float scaleFac = 1f  - scalar;
+            float gaugeMin = scalar * (float)minVal + scaleFac;
+            overheatBox.SetValue((float)val * scalar + scaleFac, gaugeMin, 1.0f);
+        }
+        else
+        {
+            if (overheatBox != null)
+            {
+                part.stackIcon.RemoveInfo(overheatBox);
+                overheatBox = null;
             }
         }
     }
