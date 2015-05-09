@@ -195,6 +195,59 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
         }
     }
 
+    public override void FXUpdate()
+    {
+        if (EngineIgnited)
+        {
+            part.Effect(directThrottleEffectName, requestedThrottle);
+        }
+        else
+        {
+            part.Effect(directThrottleEffectName, 0f);
+        }
+
+        if (EngineIgnited && !flameout)
+        {
+            /*if (useEngineResponseTime)
+            {
+                engineSpool = Mathf.Lerp(engineSpool, Mathf.Max(engineSpoolIdle, currentThrottle), engineSpoolTime * TimeWarp.fixedDeltaTime);
+            }
+            else
+            {*/
+                engineSpool = currentThrottle;
+            //}
+
+            part.Effect(spoolEffectName, engineSpool);
+            part.Effect(runningEffectName, currentThrottle);
+
+            if (finalThrust == 0f)
+            {
+                part.Effect(powerEffectName, 0f);
+            }
+            else
+            {
+                part.Effect(powerEffectName, finalThrust / maxThrust);
+            }
+        }
+        else
+        {
+            /*if (useEngineResponseTime)
+            {
+                engineSpool = Mathf.Lerp(engineSpool, flameout ? 0f : currentThrottle, engineSpoolTime * TimeWarp.fixedDeltaTime);
+            }
+            else
+            {*/
+                engineSpool = 0f;
+            //}
+
+            part.Effect(spoolEffectName, engineSpool);
+            part.Effect(runningEffectName, 0f);
+            part.Effect(powerEffectName, 0f);
+        }
+
+
+    }
+
     virtual protected void UpdateTemp()
     {
         if (tempRatio > 1d)
