@@ -79,7 +79,6 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
 
     virtual public void Start()
     {
-        useAtmCurve = atmChangeFlow = useVelCurve = false;
         CreateEngine();
         Need_Area = engineSolver.GetArea();
 
@@ -122,7 +121,7 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
     public override void OnLoad(ConfigNode node)
     {
         base.OnLoad(node);
-        useAtmCurve = atmChangeFlow = useVelCurve = false;
+        // -- will be done on Start - CreateEngine();
     }
 
     new virtual public void FixedUpdate()
@@ -133,6 +132,8 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
         requestedThrottle = 0f;
 
         SetUnflameout();
+        if (!HighLogic.LoadedSceneIsEditor && !HighLogic.LoadedSceneIsFlight)
+            return;
 
         if (HighLogic.LoadedSceneIsEditor)
         {
@@ -145,7 +146,7 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
             }
             return;
         }
-
+        // so we must be in flight
         if (TimeWarping())
         {
             currentThrottle = 0f;
@@ -165,7 +166,13 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
         if(EngineIgnited || flameout)
             requestedThrottle = vessel.ctrlState.mainThrottle;
         UpdateThrottle();
-        UpdateFlightCondition(vessel.altitude, vessel.srfSpeed, vessel.staticPressurekPa, useExtTemp ? vessel.externalTemperature : vessel.atmosphericTemperature, vessel.mainBody.atmosphereContainsOxygen);
+        UpdateFlightCondition(vessel.altitude,
+            vessel.srfSpeed,
+            vessel.staticPressurekPa,
+            useExtTemp ? vessel.externalTemperature : vessel.atmosphericTemperature,
+            vessel.atmDensity,
+            vessel.mach,
+            vessel.mainBody.atmosphereContainsOxygen);
         CalculateEngineParams();
         UpdateTemp();
 
@@ -308,13 +315,13 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
         actualThrottle = Mathf.RoundToInt(currentThrottle * 100f);
     }
 
-    virtual public void UpdateFlightCondition(double altitude, double vel, double pressure, double temperature, bool oxygen)
+    virtual public void UpdateFlightCondition(double altitude, double vel, double pressure, double temperature, double rho, double mach, bool oxygen)
     {
         Environment = pressure.ToString("N2") + " kPa; " + temperature.ToString("N2") + " K ";
 
         engineSolver.SetTPR(OverallTPR);
         engineSolver.SetEngineState(EngineIgnited, lastPropellantFraction);
-        engineSolver.SetFreestream(altitude, pressure, temperature, vessel.atmDensity, vessel.mach, vel, oxygen);
+        engineSolver.SetFreestream(altitude, pressure, temperature, rho, mach, vel, oxygen);
         engineSolver.CalculatePerformance(Arearatio, currentThrottle, flowMult, ispMult);
     }
 
