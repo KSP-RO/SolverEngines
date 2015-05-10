@@ -14,6 +14,8 @@ public class AJEInlet : ModuleResourceIntake
     public bool useTPRCurve = true;
     [KSPField(isPersistant = false, guiActive = true)]
     public double cosine = 1d;
+    [KSPField(isPersistant = false, guiActive = true, guiName = "Overall TPR", guiFormat = "P2")]
+    public double overallTPR = 1d;
 
     // replace some original things
     protected Transform intakeTransform = null;
@@ -36,6 +38,28 @@ public class AJEInlet : ModuleResourceIntake
         }
 
     }
+
+    public void UpdateOverallTPR(Vector3 velocity, double mach)
+    {
+        // blowfish - avoid TPR variations at standstill
+        if (velocity.IsSmallerThan(0.05f))
+        {
+            cosine = 0.987654d;
+            mach = 0d;
+        }
+        else
+        {
+            //by Virindi
+            double realcos = Math.Max(0d, Vector3.Dot(velocity.normalized, intakeTransform.forward));
+            double fakecos = (-0.000123d * velocity.sqrMagnitude + 0.002469d * velocity.magnitude + 0.987654d);
+            if (fakecos > 1d)
+                fakecos = 1d;
+
+            cosine = Math.Max(realcos, fakecos); //by Virindi
+        }
+
+        overallTPR = cosine * cosine * GetTPR(mach);
+    }
                 
     public override void OnStart(StartState state)
     {
@@ -56,20 +80,14 @@ public class AJEInlet : ModuleResourceIntake
             return;
         }
 
-        if (!intakeEnabled) //by Virindi
+        if (intakeEnabled)
         {
-            cosine = 1f;
+            UpdateOverallTPR(vessel.srf_velocity, vessel.mach);
         }
         else
         {
-
-            double realcos = Math.Max(0d, Vector3.Dot(vessel.srf_velocity.normalized, intakeTransform.forward));
-
-            double fakecos = (-0.000123d * vessel.srfSpeed * vessel.srfSpeed + 0.002469d * vessel.srfSpeed + 0.987654d);
-            if (fakecos > 1d)
-                fakecos = 1d;
-
-            cosine = Math.Max(realcos, fakecos); //by Virindi
+            cosine = 1d;
+            overallTPR = 0d;
         }
     }
 

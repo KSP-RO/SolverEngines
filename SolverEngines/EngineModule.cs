@@ -287,7 +287,7 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
             if ((object)i != null) // probably unneeded because I'm updating the lists now
             {
                 InletArea += i.Area;
-                OverallTPR += i.Area * i.cosine * i.cosine * i.GetTPR(M0);
+                OverallTPR += i.overallTPR * i.Area; ;
             }
         }
 
