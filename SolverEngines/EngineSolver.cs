@@ -9,7 +9,7 @@ using KSP;
 public class EngineSolver
 {
     //freestream flight conditions; static pressure, static temperature, static density, and mach number
-    protected double alt, p0, t0, eair0, vel, M0 = 0;
+    protected double alt, p0, t0, eair0, vel, M0 = 0, rho, mach;
     protected bool oxygen = false;
 
     // engine state
@@ -46,12 +46,13 @@ public class EngineSolver
     /// <param name="temperature">temperature in K</param>
     /// <param name="velocity">velocity in m/s</param>
     /// <param name="hasOxygen">does the atmosphere contain oxygen</param>
-    virtual public void SetFreestream(double altitude, double pressure, double temperature, double velocity, bool hasOxygen)
+    virtual public void SetFreestream(double altitude, double pressure, double temperature, double inRho, double inMach, double velocity, bool hasOxygen)
     {
         alt = altitude;
         p0 = pressure * 1000d;
         t0 = temperature;
         oxygen = hasOxygen;
+        rho = inRho;
 
         gamma_c = CalculateGamma(t0, 0);
         inv_gamma_c = 1d / gamma_c;

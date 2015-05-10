@@ -294,7 +294,10 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
 
         if (InletArea > 0)
             OverallTPR /= InletArea;
-        Arearatio = Math.Min(InletArea / EngineArea, 1f);
+        if (EngineArea > 0d)
+            Arearatio = Math.Min(InletArea / EngineArea, 1d);
+        else
+            Arearatio = 1d;
         Inlet = "Area:" + Arearatio.ToString("P2") + " TPR:" + OverallTPR.ToString("P2");
 
     }
@@ -311,7 +314,7 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
 
         engineSolver.SetTPR(OverallTPR);
         engineSolver.SetEngineState(EngineIgnited, lastPropellantFraction);
-        engineSolver.SetFreestream(altitude, pressure, temperature, vel, oxygen);
+        engineSolver.SetFreestream(altitude, pressure, temperature, vessel.atmDensity, vessel.mach, vel, oxygen);
         engineSolver.CalculatePerformance(Arearatio, currentThrottle, flowMult, ispMult);
     }
 
