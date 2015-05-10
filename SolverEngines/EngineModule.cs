@@ -162,7 +162,8 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
         }
             
         UpdateInletEffects();
-        requestedThrottle = vessel.ctrlState.mainThrottle;
+        if(EngineIgnited || flameout)
+            requestedThrottle = vessel.ctrlState.mainThrottle;
         UpdateThrottle();
         UpdateFlightCondition(vessel.altitude, vessel.srfSpeed, vessel.staticPressurekPa, useExtTemp ? vessel.externalTemperature : vessel.atmosphericTemperature, vessel.mainBody.atmosphereContainsOxygen);
         CalculateEngineParams();
