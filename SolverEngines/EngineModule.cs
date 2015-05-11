@@ -164,7 +164,7 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
         }
             
         UpdateInletEffects();
-        if(EngineIgnited || flameout)
+        if(!EngineIgnited && !flameout)
             requestedThrottle = vessel.ctrlState.mainThrottle;
         UpdateThrottle();
         UpdateFlightCondition(vessel.altitude,
