@@ -81,6 +81,7 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
     {
         CreateEngine();
         Need_Area = engineSolver.GetArea();
+        Fields["Need_Area"].guiActiveEditor = Need_Area > 0;
 
         List<Part> parts = null;
         engineList = new List<ModuleEnginesSolver>();

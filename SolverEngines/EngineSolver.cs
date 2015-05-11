@@ -52,7 +52,9 @@ public class EngineSolver
         p0 = pressure * 1000d;
         t0 = temperature;
         oxygen = hasOxygen;
+        vel = velocity;
         rho = inRho;
+        mach = inMach;
 
         gamma_c = CalculateGamma(t0, 0);
         inv_gamma_c = 1d / gamma_c;
