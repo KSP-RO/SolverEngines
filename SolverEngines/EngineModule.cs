@@ -227,7 +227,7 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
             //}
 
             part.Effect(spoolEffectName, engineSpool);
-            part.Effect(runningEffectName, currentThrottle);
+            
 
             if (finalThrust == 0f)
             {
@@ -235,7 +235,9 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
             }
             else
             {
-                part.Effect(powerEffectName, finalThrust / maxThrust);
+                float pow = finalThrust / maxThrust;
+                part.Effect(runningEffectName, pow);
+                part.Effect(powerEffectName, pow);
             }
         }
         else
@@ -345,7 +347,7 @@ public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
 
         if (thrustIn <= 0d || double.IsNaN(thrustIn))
         {
-            if (EngineIgnited && !double.IsNaN(thrustIn))
+            if (EngineIgnited && !double.IsNaN(thrustIn) && currentThrottle > 0f)
             {
                 Flameout(engineSolver.GetStatus());
             }
