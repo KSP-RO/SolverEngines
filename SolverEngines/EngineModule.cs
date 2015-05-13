@@ -277,20 +277,30 @@ namespace SolverEngines
         {
             double EngineArea = 0, InletArea = 0;
             OverallTPR = 0;
-
             if (engineSolver == null)
             {
-                Debug.Log("HOW?!");
+                Debug.Log("*ERROR* EngineSolver on this part is null!");
                 return;
             }
-            double M0 = engineSolver.GetM0();
+            if (inletList == null || engineList == null)
+            {
+                inletList = new List<AJEInlet>();
+                engineList = new List<ModuleEnginesSolver>();
+                if (vessel != null && vessel.Parts != null)
+                    GetLists(vessel.Parts);
+                else
+                    return;
+            }
             int eCount = engineList.Count;
             for (int j = 0; j < eCount; ++j)
             {
                 ModuleEnginesSolver e = engineList[j];
                 if ((object)e != null) // probably unneeded because I'm updating the lists now
                 {
-                    EngineArea += e.engineSolver.GetArea();
+                    if (e.engineSolver != null)
+                        EngineArea += e.engineSolver.GetArea();
+                    else
+                        Debug.Log("For part " + e.part.name + ", engineSolver is null!");
                 }
             }
 
@@ -300,10 +310,9 @@ namespace SolverEngines
                 if ((object)i != null) // probably unneeded because I'm updating the lists now
                 {
                     InletArea += i.Area;
-                    OverallTPR += i.overallTPR * i.Area; ;
+                    OverallTPR += i.overallTPR * i.Area;
                 }
             }
-
             if (InletArea > 0)
                 OverallTPR /= InletArea;
             if (EngineArea > 0d)
@@ -316,7 +325,7 @@ namespace SolverEngines
 
         new virtual public void UpdateThrottle()
         {
-            currentThrottle = Mathf.Max(0.01f, currentThrottle);
+            currentThrottle = Mathf.Max(0.00f, currentThrottle);
             actualThrottle = Mathf.RoundToInt(currentThrottle * 100f);
         }
 
@@ -349,7 +358,7 @@ namespace SolverEngines
 
             if (thrustIn <= 0d || double.IsNaN(thrustIn))
             {
-                if (EngineIgnited && !double.IsNaN(thrustIn) && currentThrottle > 0f)
+                if (EngineIgnited && !double.IsNaN(thrustIn) && (currentThrottle > 0f || throttleLocked))
                 {
                     Flameout(engineSolver.GetStatus());
                 }
@@ -456,6 +465,8 @@ namespace SolverEngines
         {
             engineList.Clear();
             inletList.Clear();
+            if (parts == null)
+                return;
             for (int j = 0; j < partsCount; ++j)        //reduces garbage produced compared to foreach due to Unity Mono issues
             {
                 Part p = parts[j];
