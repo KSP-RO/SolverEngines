@@ -61,14 +61,14 @@ namespace SolverEngines
 
         // protected internals
         protected EngineSolver engineSolver = null;
-        protected List<ModuleEnginesSolver> engineList;
-        protected List<AJEInlet> inletList;
-        protected double OverallTPR = 1d, Arearatio = 1d;
+
+        protected EngineThermodynamics ambientTherm = new EngineThermodynamics();
+        protected EngineThermodynamics inletTherm = new EngineThermodynamics();
+
+        protected double areaRatio = 1d;
 
         protected Vector3 thrustOffset = Vector3.zero;
         protected Quaternion thrustRot = Quaternion.identity;
-
-        protected int partsCount = 0;
 
         protected const double invg0 = 1d / 9.80665d;
 
@@ -85,19 +85,6 @@ namespace SolverEngines
             Need_Area = engineSolver.GetArea();
             Fields["Need_Area"].guiActiveEditor = Need_Area > 0;
 
-            List<Part> parts = null;
-            engineList = new List<ModuleEnginesSolver>();
-            inletList = new List<AJEInlet>();
-
-            if (HighLogic.LoadedSceneIsEditor)
-                parts = EditorLogic.fetch.getSortedShipList();
-            else if (HighLogic.LoadedSceneIsFlight)
-                parts = vessel.Parts;
-            if (parts != null)
-            {
-                partsCount = parts.Count;
-                GetLists(parts);
-            }
             currentThrottle = 0f;
             flameout = false;
             SetUnflameout();
@@ -140,13 +127,7 @@ namespace SolverEngines
 
             if (HighLogic.LoadedSceneIsEditor)
             {
-                List<Part> eParts = EditorLogic.fetch.getSortedShipList();
-                int eNewCount = eParts.Count;
-                if (eNewCount != partsCount)
-                {
-                    partsCount = eNewCount;
-                    GetLists(eParts);
-                }
+                // nothing to see here
                 return;
             }
             // so we must be in flight
@@ -156,24 +137,15 @@ namespace SolverEngines
                 return;
             }
 
-            // update our links
-            List<Part> parts = vessel.Parts;
-            int newCount = parts.Count;
-            if (newCount != partsCount)
-            {
-                partsCount = newCount;
-                GetLists(parts);
-            }
-
-            UpdateInletEffects();
             if (EngineIgnited && !flameout)
                 requestedThrottle = vessel.ctrlState.mainThrottle;
             UpdateThrottle();
-            UpdateFlightCondition(vessel.altitude,
+
+            ambientTherm.FromVesselAmbientConditions(vessel, useExtTemp);
+
+            UpdateFlightCondition(ambientTherm,
+                vessel.altitude,
                 vessel.srfSpeed,
-                vessel.staticPressurekPa,
-                useExtTemp ? vessel.externalTemperature : vessel.atmosphericTemperature,
-                vessel.atmDensity,
                 vessel.mach,
                 vessel.mainBody.atmosphereContainsOxygen);
             CalculateEngineParams();
@@ -273,53 +245,20 @@ namespace SolverEngines
         }
 
         //ferram4: separate out so function can be called separately for editor sims
-        virtual public void UpdateInletEffects()
+        virtual public void UpdateInletEffects(EngineThermodynamics inletTherm, double areaRatio = 1d, double TPR = 1d)
         {
-            double EngineArea = 0, InletArea = 0;
-            OverallTPR = 0;
             if (engineSolver == null)
             {
                 Debug.Log("*ERROR* EngineSolver on this part is null!");
                 return;
             }
-            if (inletList == null || engineList == null)
-            {
-                inletList = new List<AJEInlet>();
-                engineList = new List<ModuleEnginesSolver>();
-                if (vessel != null && vessel.Parts != null)
-                    GetLists(vessel.Parts);
-                else
-                    return;
-            }
-            int eCount = engineList.Count;
-            for (int j = 0; j < eCount; ++j)
-            {
-                ModuleEnginesSolver e = engineList[j];
-                if ((object)e != null) // probably unneeded because I'm updating the lists now
-                {
-                    if (e.engineSolver != null)
-                        EngineArea += e.engineSolver.GetArea();
-                    else
-                        Debug.Log("For part " + e.part.name + ", engineSolver is null!");
-                }
-            }
 
-            for (int j = 0; j < inletList.Count; j++)
-            {
-                AJEInlet i = inletList[j];
-                if ((object)i != null) // probably unneeded because I'm updating the lists now
-                {
-                    InletArea += i.Area;
-                    OverallTPR += i.overallTPR * i.Area;
-                }
-            }
-            if (InletArea > 0)
-                OverallTPR /= InletArea;
-            if (EngineArea > 0d)
-                Arearatio = Math.Min(InletArea / EngineArea, 1d);
-            else
-                Arearatio = 1d;
-            Inlet = "Area:" + Arearatio.ToString("P2") + " TPR:" + OverallTPR.ToString("P2");
+            // CopyFrom avoids GC associated with allocating a new one every frame
+            // Could probably just assign since this *shouldn't* be changed, but just to be sure
+            this.inletTherm.CopyFrom(inletTherm);
+            this.areaRatio = areaRatio;
+            
+            Inlet = "Area:" + this.areaRatio.ToString("P2") + " TPR:" + TPR.ToString("P2");
 
         }
 
@@ -329,14 +268,17 @@ namespace SolverEngines
             actualThrottle = Mathf.RoundToInt(currentThrottle * 100f);
         }
 
-        virtual public void UpdateFlightCondition(double altitude, double vel, double pressure, double temperature, double rho, double mach, bool oxygen)
+        virtual public void UpdateFlightCondition(EngineThermodynamics ambientTherm, double altitude, double vel, double mach, bool oxygen)
         {
-            Environment = pressure.ToString("N2") + " kPa; " + temperature.ToString("N2") + " K ";
+            // In flight, these are the same and this will just return
+            this.ambientTherm.CopyFrom(ambientTherm);
 
-            engineSolver.SetTPR(OverallTPR);
+            // This will be removed when the GUI is added
+            Environment = (ambientTherm.P/1000d).ToString("N2") + " kPa; " + ambientTherm.T.ToString("N2") + " K ";
+
             engineSolver.SetEngineState(EngineIgnited, lastPropellantFraction);
-            engineSolver.SetFreestream(altitude, pressure, temperature, rho, mach, vel, oxygen);
-            engineSolver.CalculatePerformance(Arearatio, currentThrottle, flowMult, ispMult);
+            engineSolver.SetFreestreamAndInlet(ambientTherm, inletTherm, altitude, mach, vel, oxygen);
+            engineSolver.CalculatePerformance(areaRatio, currentThrottle, flowMult, ispMult);
         }
 
         virtual public void CalculateEngineParams()
@@ -461,26 +403,6 @@ namespace SolverEngines
                 emissiveAnims[i].SetState(val);
         }
 
-        protected void GetLists(List<Part> parts)
-        {
-            engineList.Clear();
-            inletList.Clear();
-            if (parts == null)
-                return;
-            for (int j = 0; j < partsCount; ++j)        //reduces garbage produced compared to foreach due to Unity Mono issues
-            {
-                Part p = parts[j];
-                int mCount = p.Modules.Count;
-                for (int i = 0; i < mCount; ++i)
-                {
-                    PartModule m = p.Modules[i];
-                    if (m is ModuleEnginesSolver)
-                        engineList.Add(m as ModuleEnginesSolver);
-                    if (m is AJEInlet)
-                        inletList.Add(m as AJEInlet);
-                }
-            }
-        }
         protected void UpdateOverheatBox(double val, double minVal, float scalar)
         {
             if (val >= (minVal - 0.00001d))
