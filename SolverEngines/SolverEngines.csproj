@@ -34,6 +34,8 @@
     <Compile Include="AJEInlet.cs" />
     <Compile Include="EngineModule.cs" />
     <Compile Include="EngineSolver.cs" />
+    <Compile Include="EngineThermodynamics.cs" />
+    <Compile Include="FlightSys.cs" />
     <Compile Include="ModuleAnimateEmissive.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -13,12 +13,12 @@ namespace SolverEngines
         protected double alt, p0, t0, eair0, vel, M0 = 0, rho, mach;
         protected bool oxygen = false;
 
+        //total conditions behind inlet
+        protected double P1, T1, Rho1;
+
         // engine state
         protected bool running = false;
         protected double ffFraction = 1d;
-
-        //inlet total pressure recovery
-        protected double TPR;
 
         //gas properties at start
         protected double gamma_c, inv_gamma_c, inv_gamma_cm1;
@@ -47,22 +47,26 @@ namespace SolverEngines
         /// <param name="temperature">temperature in K</param>
         /// <param name="velocity">velocity in m/s</param>
         /// <param name="hasOxygen">does the atmosphere contain oxygen</param>
-        virtual public void SetFreestream(double altitude, double pressure, double temperature, double inRho, double inMach, double velocity, bool hasOxygen)
+        virtual public void SetFreestreamAndInlet(EngineThermodynamics ambientTherm, EngineThermodynamics inletTherm, double altitude, double inMach, double velocity, bool hasOxygen)
         {
             alt = altitude;
-            p0 = pressure * 1000d;
-            t0 = temperature;
+            p0 = ambientTherm.P;
+            t0 = ambientTherm.T;
+            rho = ambientTherm.Rho;
             oxygen = hasOxygen;
             vel = velocity;
-            rho = inRho;
             mach = inMach;
 
-            gamma_c = CalculateGamma(t0, 0);
+            P1 = inletTherm.P;
+            T1 = inletTherm.T;
+            Rho1 = inletTherm.Rho;
+
+            gamma_c = inletTherm.Gamma;
             inv_gamma_c = 1d / gamma_c;
             inv_gamma_cm1 = 1d / (gamma_c - 1d);
-            Cp_c = CalculateCp(t0, 0);
-            Cv_c = Cp_c * inv_gamma_c;
-            R_c = Cv_c * (gamma_c - 1);
+            Cp_c = inletTherm.Cp;
+            Cv_c = inletTherm.Cv;
+            R_c = inletTherm.R;
 
 
             M0 = vel / Math.Sqrt(gamma_c * R_c * t0);
@@ -97,7 +101,6 @@ namespace SolverEngines
         }
 
         // getters for base fields
-        public void SetTPR(double t) { TPR = t; }
         public double GetThrust() { return thrust; }
         public double GetIsp() { return Isp; }
         public double GetFuelFlow() { return fuelFlow; }
