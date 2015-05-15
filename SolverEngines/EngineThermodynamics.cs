@@ -195,5 +195,12 @@ namespace SolverEngines
             Rho = FlightGlobals.getAtmDensity(P, T, body);
             Far = 0d; // Recalculates, so no need to do by hand
         }
+        public void FromAmbientConditions(double pressurekPa, double temperatureK, double density)
+        {
+            P = pressurekPa * 1000d;
+            _T = temperatureK;
+            Rho = density;
+            Far = 0d; // Recalculates, so no need to do by hand
+        }
     }
 }

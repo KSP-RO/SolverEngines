@@ -82,6 +82,10 @@ namespace SolverEngines
         virtual public void Start()
         {
             CreateEngine();
+            if(ambientTherm == null)
+                ambientTherm = new EngineThermodynamics();
+            if(inletTherm == null)
+                inletTherm = new EngineThermodynamics();
             Need_Area = engineSolver.GetArea();
             Fields["Need_Area"].guiActiveEditor = Need_Area > 0;
 
@@ -99,6 +103,11 @@ namespace SolverEngines
             // set initial params
             engineTemp = 288.15d;
             currentThrottle = 0f;
+
+            if (ambientTherm == null)
+                ambientTherm = new EngineThermodynamics();
+            if (inletTherm == null)
+                inletTherm = new EngineThermodynamics();
 
             // Get emissives
             emissiveAnims = new List<ModuleAnimateEmissive>();
