@@ -58,7 +58,7 @@ namespace SolverEngines
                 if (lerpOffset == double.NaN)
                     lerpOffset = -draperPoint;
                 if (lerpMax == double.NaN)
-                    lerpMax = 1d;
+                    lerpMax = part.maxTemp;
                 lerpInnerScalar = lerpPow = lerpOuterScalar = 1d;
             }
             else
