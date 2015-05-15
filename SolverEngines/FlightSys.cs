@@ -50,7 +50,11 @@ namespace SolverEngines
                 return;
 
             if (partsCount != vessel.Parts.Count)
+            {
                 updatePartsList();
+                partsCount = vessel.Parts.Count;
+            }
+            
 
             InletArea = 0f;
             EngineArea = 0f;
@@ -76,17 +80,27 @@ namespace SolverEngines
                 }
             }
 
-            if (InletArea > 0f && EngineArea > 0f)
+            if (InletArea > 0f)
             {
-                AreaRatio = InletArea / EngineArea;
-                OverallTPR /= InletArea;
+                if (EngineArea > 0f)
+                {
+                    AreaRatio = InletArea / EngineArea;
+                    OverallTPR /= InletArea;
+                }
+                else
+                {
+                    AreaRatio = 1f;
+                }
             }
 
             AmbientTherm.FromVesselAmbientConditions(vessel);
             Mach = vessel.mach;
 
             // Transform from static frame to vessel frame, increasing total pressure and temperature
-            InletTherm.FromChangeReferenceFrame(AmbientTherm, vessel.srfSpeed);
+            if (vessel.srfSpeed < 0.01d)
+                InletTherm.CopyFrom(AmbientTherm);
+            else
+                InletTherm.FromChangeReferenceFrame(AmbientTherm, vessel.srfSpeed);
             InletTherm.P *= OverallTPR; // TPR accounts for loss of total pressure by inlet
 
             // Push parameters to each engine
