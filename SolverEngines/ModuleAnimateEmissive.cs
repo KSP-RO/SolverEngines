@@ -37,10 +37,13 @@ namespace SolverEngines
 
         public void SetState(double inputVal)
         {
+            double powTerm = inputVal * lerpInnerScalar;
+            if (lerpPow != 1d)
+                powTerm = Math.Pow(powTerm, lerpPow);
             animState = (float)UtilMath.Clamp(
-                (Math.Pow(inputVal * lerpInnerScalar, lerpPow) * lerpOuterScalar + lerpOffset) * lerpDivRecip,
-                lerpMin,
-                lerpMax);
+                (powTerm * lerpOuterScalar + lerpOffset) * lerpDivRecip,
+                0d,
+                1d);
         }
 
         public override void OnStart(PartModule.StartState state)
@@ -55,7 +58,7 @@ namespace SolverEngines
                 if (lerpOffset == double.NaN)
                     lerpOffset = -draperPoint;
                 if (lerpMax == double.NaN)
-                    lerpMax = part.maxTemp;
+                    lerpMax = 1d;
                 lerpInnerScalar = lerpPow = lerpOuterScalar = 1d;
             }
             else
