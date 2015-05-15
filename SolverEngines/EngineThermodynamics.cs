@@ -195,5 +195,19 @@ namespace SolverEngines
             Rho = FlightGlobals.getAtmDensity(P, T, body);
             Far = 0d; // Recalculates, so no need to do by hand
         }
+
+        public override string ToString()
+        {
+            string returnString = "";
+            returnString += "T: " + EnginesGUI.GUIUnitsSettings.TemperatureUnits.Format(T);
+            returnString += " P: " + EnginesGUI.GUIUnitsSettings.PressureUnits.Format(P);
+            returnString += " Rho: " + Rho.ToString("F2");
+            returnString += "\n FF: " + FF.ToString("F3");
+            returnString += "\n Cp: " + Cp.ToString("F2");
+            returnString += " Cv: " + Cv.ToString("F2");
+            returnString += "\nGamma: " + Gamma.ToString("F2");
+            returnString += " R: " + R.ToString("F2");
+            return returnString;
+        }
     }
 }

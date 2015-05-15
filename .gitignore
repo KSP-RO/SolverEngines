@@ -229,3 +229,4 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+GameData/SolverEngines/Plugins/PluginData/SolverEngines/config.xml

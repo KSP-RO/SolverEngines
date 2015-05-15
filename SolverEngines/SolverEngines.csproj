@@ -35,9 +35,16 @@
     <Compile Include="EngineModule.cs" />
     <Compile Include="EngineSolver.cs" />
     <Compile Include="EngineThermodynamics.cs" />
+    <Compile Include="FlightDataWrapper.cs" />
+    <Compile Include="EnginesGUI\FlightGUI.cs" />
+    <Compile Include="EnginesGUI\FlightGUISettings.cs" />
     <Compile Include="FlightSys.cs" />
+    <Compile Include="EnginesGUI\GUIUnits.cs" />
+    <Compile Include="EnginesGUI\GUIUnitsSettings.cs" />
+    <Compile Include="EnginesGUI\GUIUtil.cs" />
     <Compile Include="ModuleAnimateEmissive.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ToolbarWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
