@@ -17,11 +17,6 @@ namespace SolverEngines
     public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
     {
         // base fields
-        [KSPField(isPersistant = false, guiActive = true)]
-        public String Environment;
-
-        [KSPField(isPersistant = false, guiActive = true)]
-        public String Inlet;
 
         [KSPField(isPersistant = false, guiActiveEditor = true)]
         public double Need_Area;
@@ -266,8 +261,6 @@ namespace SolverEngines
             // Could probably just assign since this *shouldn't* be changed, but just to be sure
             this.inletTherm.CopyFrom(inletTherm);
             this.areaRatio = areaRatio;
-            
-            Inlet = "Area:" + this.areaRatio.ToString("P2") + " TPR:" + TPR.ToString("P2");
 
         }
 
@@ -281,9 +274,6 @@ namespace SolverEngines
         {
             // In flight, these are the same and this will just return
             this.ambientTherm.CopyFrom(ambientTherm);
-
-            // This will be removed when the GUI is added
-            Environment = (ambientTherm.P/1000d).ToString("N2") + " kPa; " + ambientTherm.T.ToString("N2") + " K ";
 
             engineSolver.SetEngineState(EngineIgnited, lastPropellantFraction);
             engineSolver.SetFreestreamAndInlet(ambientTherm, inletTherm, altitude, mach, vel, oxygen);
