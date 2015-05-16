@@ -46,32 +46,42 @@ namespace SolverEngines
                 1d);
         }
 
-        public override void OnStart(PartModule.StartState state)
+        protected void SetDefaults()
         {
-            base.OnStart(state); // sets up the animation etc.
-            stateCount = heatAnimStates.Length;
-
             if (useHeat)
             {
-                if (lerpMin == double.NaN)
+                if (double.IsNaN(lerpMin))
                     lerpMin = 0d;
-                if (lerpOffset == double.NaN)
+                if (double.IsNaN(lerpOffset))
                     lerpOffset = -draperPoint;
-                if (lerpMax == double.NaN)
+                if (double.IsNaN(lerpMax))
                     lerpMax = part.maxTemp;
                 lerpInnerScalar = lerpPow = lerpOuterScalar = 1d;
             }
             else
             {
-                if (lerpMin == double.NaN)
+                if (double.IsNaN(lerpMin))
                     lerpMin = 0d;
-                if (lerpOffset == double.NaN)
+                if (double.IsNaN(lerpOffset))
                     lerpOffset = 0d;
-                if (lerpMax == double.NaN)
+                if (double.IsNaN(lerpMax))
                     lerpMax = 1d;
             }
-
             UpdateLerpVals();
+        }
+
+        public override void OnLoad(ConfigNode node)
+        {
+            base.OnLoad(node);
+            SetDefaults();
+        }
+
+        public override void OnStart(PartModule.StartState state)
+        {
+            base.OnStart(state); // sets up the animation etc.
+            stateCount = heatAnimStates.Length;
+
+            SetDefaults();
         }
         new public void Update()
         {
