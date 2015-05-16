@@ -7,7 +7,7 @@ using KSP;
 
 namespace SolverEngines
 {
-    public class AJEInlet : ModuleResourceIntake
+    public class AJEInlet : ModuleResourceIntake, IModuleInfo
     {
         [KSPField(isPersistant = false, guiActive = true, guiActiveEditor = true)]
         public float Area;
@@ -15,10 +15,15 @@ namespace SolverEngines
         public FloatCurve TPRCurve = new FloatCurve();
         [KSPField(isPersistant = false, guiActive = false)]
         public bool useTPRCurve = true;
-        [KSPField(isPersistant = false, guiActive = true)]
-        public double cosine = 1d;
+        [KSPField(isPersistant = false, guiActive = false)]
+        public string inletTitle;
+        [KSPField(isPersistant = false, guiActive = false)]
+        public string inletDescription;
+
+        [KSPField(isPersistant = false, guiActive = true, guiFormat = "F3")]
+        public float cosine = 1f;
         [KSPField(isPersistant = false, guiActive = true, guiName = "Overall TPR", guiFormat = "P2")]
-        public double overallTPR = 1d;
+        public float overallTPR = 1f;
 
         // replace some original things
         protected Transform intakeTransform = null;
@@ -26,18 +31,18 @@ namespace SolverEngines
         new public float intakeDrag;
         new public float airSpeedGui;
 
-        public double GetTPR(double Mach)
+        public float GetTPR(double Mach)
         {
             if (useTPRCurve)
             {
-                return (double)TPRCurve.Evaluate((float)Mach);
+                return TPRCurve.Evaluate((float)Mach);
             }
             else
             {
                 if (Mach <= 1d)
-                    return 1d;
+                    return 1f;
                 else
-                    return 1.0d - .075d * Math.Pow(Mach - 1.0d, 1.35d);
+                    return 1.0f - .075f * (float)Math.Pow(Mach - 1.0d, 1.35d);
             }
 
         }
@@ -47,16 +52,16 @@ namespace SolverEngines
             // blowfish - avoid TPR variations at standstill
             if (velocity.IsSmallerThan(0.05f))
             {
-                cosine = 0.987654d;
+                cosine = 0.987654f;
                 mach = 0d;
             }
             else
             {
                 //by Virindi
-                double realcos = Math.Max(0d, Vector3.Dot(velocity.normalized, intakeTransform.forward));
-                double fakecos = (-0.000123d * velocity.sqrMagnitude + 0.002469d * velocity.magnitude + 0.987654d);
-                if (fakecos > 1d)
-                    fakecos = 1d;
+                float realcos = Math.Max(0f, Vector3.Dot(velocity.normalized, intakeTransform.forward));
+                float fakecos = (-0.000123f * velocity.sqrMagnitude + 0.002469f * velocity.magnitude + 0.987654f);
+                if (fakecos > 1f)
+                    fakecos = 1f;
 
                 cosine = Math.Max(realcos, fakecos); //by Virindi
             }
@@ -89,14 +94,46 @@ namespace SolverEngines
             }
             else
             {
-                cosine = 1d;
-                overallTPR = 0d;
+                cosine = 1f;
+                overallTPR = 0f;
             }
+        }
+
+        public Callback<Rect> GetDrawModulePanelCallback()
+        {
+            return null;
+        }
+
+        public string GetModuleTitle()
+        {
+            return "AJE Inlet";
+        }
+
+        public string GetPrimaryField()
+        {
+            return "<b>Intake Area: </b>" + (Area).ToString("N4") + " m^2";
         }
 
         public override string GetInfo()
         {
             string output = "";
+
+            if (inletTitle != null && inletTitle.Length > 0)
+            {
+                output += "<b>" + inletTitle + "</b>\n";
+
+                if (inletDescription != null && inletDescription.Length > 0)
+                {
+                    output += inletDescription + "\n";
+                }
+
+                output += "\n";
+            }
+            else
+            {
+                if (inletDescription != null && inletDescription.Length > 0)
+                    Debug.LogWarning("AJEInlet on part " + part.name + " has inletDescription but no inletTitle.  inletDescription will not be displayed.");
+            }
 
             output += "<b>Intake Resource: </b>" + resourceName + "\n";
             output += "<b>Intake Area: </b>" + (Area).ToString("N4") + " m^2";
