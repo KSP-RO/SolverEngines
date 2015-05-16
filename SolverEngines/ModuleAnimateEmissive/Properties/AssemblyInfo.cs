@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("SolverEngines")]
+[assembly: AssemblyTitle("ModuleAnimateEmissive")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("SolverEngines")]
-[assembly: AssemblyCopyright("Copyright ©  2015")]
+[assembly: AssemblyCompany("NathanKell")]
+[assembly: AssemblyProduct("ModuleAnimateEmissive")]
+[assembly: AssemblyCopyright("Copyright ©  2015 (MIT License)")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("2e58f2f0-f1e3-4f10-bbfc-718538e2fcfa")]
+[assembly: Guid("97ebf2ee-86ec-4f08-8308-1c1e0b152ae1")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -35,5 +35,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
-[assembly: KSPAssemblyDependency("ModuleAnimateEmissive", 1, 0)]
-[assembly: KSPAssembly("SolverEngines", 1, 0)]
+[assembly: KSPAssembly("ModuleAnimateEmissive", 1, 0)]
