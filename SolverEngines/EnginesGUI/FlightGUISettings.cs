@@ -36,7 +36,7 @@ namespace SolverEngines.EnginesGUI
         {
             if (ShowSettingsWindow)
             {
-                SettingsWindowPos = GUILayout.Window(GUIUtil.SettingsWindowID, SettingsWindowPos, SettingsWindowGUI, "AJE Flight GUI Settings", GUILayout.MinWidth(150));
+                SettingsWindowPos = GUILayout.Window(GUIUtil.SettingsWindowID, SettingsWindowPos, SettingsWindowGUI, "Engines Flight GUI Settings", GUILayout.MinWidth(150));
             }
         }
 

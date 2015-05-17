@@ -27,7 +27,7 @@ namespace SolverEngines.EnginesGUI
         {
             if (ShowUnitsSettingsWindow)
             {
-                UnitsSettingsWindowPos = GUILayout.Window(GUIUtil.UnitsSettingsWindowID, UnitsSettingsWindowPos, UnitsSettingsWindowGUI, "AJE Units Settings", GUILayout.MinWidth(150));
+                UnitsSettingsWindowPos = GUILayout.Window(GUIUtil.UnitsSettingsWindowID, UnitsSettingsWindowPos, UnitsSettingsWindowGUI, "Engines GUI Units Settings", GUILayout.MinWidth(150));
             }
         }
 

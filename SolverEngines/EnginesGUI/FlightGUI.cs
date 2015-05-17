@@ -76,7 +76,7 @@ namespace SolverEngines.EnginesGUI
             if (!GUIUtil.StylesInitialized)
                 GUIUtil.SetupStyles();
 
-            FlightWindowPos = GUILayout.Window(GUIUtil.FlightWindowID, FlightWindowPos, FlightWindowGUI, "Advanced Jet Engine", GUILayout.MinWidth(150));
+            FlightWindowPos = GUILayout.Window(GUIUtil.FlightWindowID, FlightWindowPos, FlightWindowGUI, "Engines GUI", GUILayout.MinWidth(150));
 
             FlightGUISettings.OnSettingsWindowGUI();
             GUIUnitsSettings.OnUnitsSettingsWindowGUI();
@@ -271,7 +271,7 @@ namespace SolverEngines.EnginesGUI
             if (AJEFlightButtonBlizzy == null)
             {
                 AJEFlightButtonBlizzy = ToolbarManager.Instance.add("AJE", "AJEFlightButton");
-                AJEFlightButtonBlizzy.TexturePath = "SolverEngines/Icons/AJEIconBlizzy";
+                AJEFlightButtonBlizzy.TexturePath = "SolverEngines/Icons/EnginesIconBlizzy";
                 AJEFlightButtonBlizzy.ToolTip = "Advanced Jet Engine";
                 AJEFlightButtonBlizzy.OnClick += (e) => ShowFlightGUIWindow = !ShowFlightGUIWindow;
             }
@@ -289,7 +289,7 @@ namespace SolverEngines.EnginesGUI
                     DummyVoid,
                     DummyVoid,
                     ApplicationLauncher.AppScenes.FLIGHT,
-                    (Texture)GameDatabase.Instance.GetTexture("SolverEngines/Icons/AJEIconStock", false));
+                    (Texture)GameDatabase.Instance.GetTexture("SolverEngines/Icons/EnginesIconStock", false));
             }
         }
 
