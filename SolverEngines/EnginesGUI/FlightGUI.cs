@@ -17,8 +17,8 @@ namespace SolverEngines.EnginesGUI
 
         // Toolbar stuff
 
-        private static IButton AJEFlightButtonBlizzy = null;
-        private static ApplicationLauncherButton AJEFlightButtonStock = null;
+        private static IButton EnginesFlightButtonBlizzy = null;
+        private static ApplicationLauncherButton EnginesFlightButtonStock = null;
 
         // GUI stuff
 
@@ -62,8 +62,8 @@ namespace SolverEngines.EnginesGUI
             GameEvents.onHideUI.Remove(HideUI);
             SaveSettingsToConfig();
 
-            if (AJEFlightButtonBlizzy != null)
-                AJEFlightButtonBlizzy.Destroy();
+            if (EnginesFlightButtonBlizzy != null)
+                EnginesFlightButtonBlizzy.Destroy();
         }
 
         #region GUI
@@ -268,20 +268,20 @@ namespace SolverEngines.EnginesGUI
 
         private static void CreateToolbarButtonBlizzy()
         {
-            if (AJEFlightButtonBlizzy == null)
+            if (EnginesFlightButtonBlizzy == null)
             {
-                AJEFlightButtonBlizzy = ToolbarManager.Instance.add("AJE", "AJEFlightButton");
-                AJEFlightButtonBlizzy.TexturePath = "SolverEngines/Icons/EnginesIconBlizzy";
-                AJEFlightButtonBlizzy.ToolTip = "Advanced Jet Engine";
-                AJEFlightButtonBlizzy.OnClick += (e) => ShowFlightGUIWindow = !ShowFlightGUIWindow;
+                EnginesFlightButtonBlizzy = ToolbarManager.Instance.add("Engines GUI", "EnginesFlightButton");
+                EnginesFlightButtonBlizzy.TexturePath = "SolverEngines/Icons/EnginesIconBlizzy";
+                EnginesFlightButtonBlizzy.ToolTip = "Engines GUI";
+                EnginesFlightButtonBlizzy.OnClick += (e) => ShowFlightGUIWindow = !ShowFlightGUIWindow;
             }
         }
 
         private static void CreateToolbarButtonStock()
         {
-            if (ApplicationLauncher.Ready && AJEFlightButtonStock == null)
+            if (ApplicationLauncher.Ready && EnginesFlightButtonStock == null)
             {
-                AJEFlightButtonStock = ApplicationLauncher.Instance.AddModApplication(
+                EnginesFlightButtonStock = ApplicationLauncher.Instance.AddModApplication(
                     onAppLaunchToggleOn,
                     onAppLaunchToggleOff,
                     DummyVoid,
