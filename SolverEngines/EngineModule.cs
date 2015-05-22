@@ -184,57 +184,10 @@ namespace SolverEngines
 
         public override void FXUpdate()
         {
-            if (EngineIgnited)
-            {
-                part.Effect(directThrottleEffectName, requestedThrottle);
-            }
-            else
-            {
-                part.Effect(directThrottleEffectName, 0f);
-            }
-
-            if (EngineIgnited && !flameout)
-            {
-                /*if (useEngineResponseTime)
-                {
-                    engineSpool = Mathf.Lerp(engineSpool, Mathf.Max(engineSpoolIdle, currentThrottle), engineSpoolTime * TimeWarp.fixedDeltaTime);
-                }
-                else
-                {*/
-                engineSpool = currentThrottle;
-                //}
-
-                part.Effect(spoolEffectName, engineSpool);
-
-
-                if (finalThrust == 0f)
-                {
-                    part.Effect(powerEffectName, 0f);
-                }
-                else
-                {
-                    float pow = finalThrust / maxThrust;
-                    part.Effect(runningEffectName, pow);
-                    part.Effect(powerEffectName, pow);
-                }
-            }
-            else
-            {
-                /*if (useEngineResponseTime)
-                {
-                    engineSpool = Mathf.Lerp(engineSpool, flameout ? 0f : currentThrottle, engineSpoolTime * TimeWarp.fixedDeltaTime);
-                }
-                else
-                {*/
-                engineSpool = 0f;
-                //}
-
-                part.Effect(spoolEffectName, engineSpool);
-                part.Effect(runningEffectName, 0f);
-                part.Effect(powerEffectName, 0f);
-            }
-
-
+            part.Effect(directThrottleEffectName, engineSolver.GetFXThrottle());
+            part.Effect(spoolEffectName, engineSolver.GetFXSpool());
+            part.Effect(runningEffectName, engineSolver.GetFXRunning());
+            part.Effect(powerEffectName, engineSolver.GetFXPower());
         }
 
         virtual protected void UpdateTemp()

@@ -26,8 +26,8 @@ namespace SolverEngines
         protected double Cp_c;
         protected double Cv_c;
 
-        //Throttles for burner and afterburner
-        protected double mainThrottle, abThrottle;
+        // current throttle state
+        protected double throttle;
 
         //thrust and Isp and fuel flow of the engine
         protected double thrust, Isp, fuelFlow;
@@ -98,6 +98,7 @@ namespace SolverEngines
             fuelFlow = 0d;
             Isp = 0d;
             thrust = 0d;
+            throttle = commandedThrottle;
         }
 
         // getters for base fields
@@ -107,10 +108,16 @@ namespace SolverEngines
         public double GetM0() { return M0; }
 
         // virtual getters
+        // Status
         virtual public double GetEngineTemp() { return 288.15d; }
         virtual public double GetArea() { return 0d; }
-        virtual public double GetEmissive() { return 0d; }
         virtual public string GetStatus() { return statusString; }
+        // FX
+        virtual public double GetEmissive() { return 0d; }
+        virtual public float GetFXPower() { return running && ffFraction > 0d ? (float)throttle : 0f; }
+        virtual public float GetFXRunning() { return running && ffFraction > 0d ? (float)throttle : 0f; }
+        virtual public float GetFXThrottle() { return running && ffFraction > 0d ? (float)throttle : 0f; }
+        virtual public float GetFXSpool() { return running && ffFraction > 0d ? (float)throttle : 0f; }
 
 
         protected double CalculateGamma(double temperature, double fuel_fraction)
