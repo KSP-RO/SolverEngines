@@ -1,5 +1,11 @@
 SolverEngines is by NathanKell and blowfish, based on the work of camlost for AJE.
+
 License: LGPL.
+GitHub (source): https://github.com/KSP-RO/SolverEngines
+
+Installation:
+Merge the zip's GameData folder with your KSP/GameData folder. After installing, inside KSP/GameData should be a SolverEngines folder (and inside that, Icons and Plugins folders).
+Note: **Unless a mod you are using requires this, do not install it. It's for developers, not end users.**
 
 SolverEngines is at its heart a replacement paradigm for how KSP deals with engines, splitting engines into a partmodule and an engine solver. Instead of a single engine module that does everything, or that is specifically geared to a single type of enigne, and instead of needing to keep a stock engine module present but then override its values every tick, SolverEngines decouples the engine module from the code that handles performance (the solver).
 
