@@ -13,4 +13,6 @@ To use SolverEngines, implement two classes: a class that derives from EngineSol
 
 SolverEngines will also automatically create overheat bars if engineTemp approaches maxEngineTemp, and will set all ModuleAnimateEmissive modules on the part to solver.GetEmissive() each tick.
 
+SolverEngines includes a GUI to display useful information about engines in flight, and additional info about air-breathing engines using SolverEngines when they are present.  The GUI will display an icon on blizzy87's toolbar if available, or on the stock toolbar if it is not.  All fields in the display GUI can be disabled in the settings window, and the display units can be changed in the units window.
+
 See AJE or RealFuels for examplez of how to implement SolverEngines in practice.
