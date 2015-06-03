@@ -112,6 +112,7 @@ namespace SolverEngines
         virtual public double GetEngineTemp() { return 288.15d; }
         virtual public double GetArea() { return 0d; }
         virtual public string GetStatus() { return statusString; }
+        virtual public bool GetRunning() { return running; }
         // FX
         virtual public double GetEmissive() { return 0d; }
         virtual public float GetFXPower() { return running && ffFraction > 0d ? (float)throttle : 0f; }

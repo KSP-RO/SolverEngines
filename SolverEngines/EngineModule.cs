@@ -250,9 +250,9 @@ namespace SolverEngines
             double fuelFlow = engineSolver.GetFuelFlow();
             double massFlow = 0d;
 
-            if (thrustIn <= 0d || double.IsNaN(thrustIn))
+            if (double.IsNaN(thrustIn) || !engineSolver.GetRunning())
             {
-                if (EngineIgnited && !double.IsNaN(thrustIn) && (currentThrottle > 0f || throttleLocked))
+                if (EngineIgnited && (currentThrottle > 0f || throttleLocked))
                 {
                     Flameout(engineSolver.GetStatus());
                 }
