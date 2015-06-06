@@ -46,6 +46,9 @@ namespace SolverEngines
         public double maxEngineTemp;
         [KSPField(isPersistant = false, guiActive = true, guiName = "Eng. Internal Temp")]
         public string engineTempString;
+        [KSPField]
+        public double tempGaugeMin = 0.8d;
+
         // internals
         protected double tempRatio = 0d, engineTemp = 288.15d;
         protected double lastPropellantFraction = 1d;
@@ -198,7 +201,7 @@ namespace SolverEngines
                 part.explode();
             }
             else
-                UpdateOverheatBox(tempRatio, 0.8d, 2f);
+                UpdateOverheatBox(tempRatio, tempGaugeMin);
         }
 
         //ferram4: separate out so function can be called separately for editor sims
@@ -355,7 +358,7 @@ namespace SolverEngines
                 emissiveAnims[i].SetState(val);
         }
 
-        protected void UpdateOverheatBox(double val, double minVal, float scalar)
+        protected void UpdateOverheatBox(double val, double minVal)
         {
             if (val >= (minVal - 0.00001d))
             {
@@ -368,9 +371,10 @@ namespace SolverEngines
                     overheatBox.SetProgressBarBgColor(XKCDColors.DarkRed.A(0.6f));
                     overheatBox.SetProgressBarColor(XKCDColors.OrangeYellow.A(0.6f));
                 }
-                float scaleFac = 1f - scalar;
-                float gaugeMin = scalar * (float)minVal + scaleFac;
-                overheatBox.SetValue((float)val * scalar + scaleFac, gaugeMin, 1.0f);
+                double scalar = 1d / (1d - minVal);
+                double scaleFac = 1f - scalar;
+                float gaugeMin = (float)(scalar * minVal + scaleFac);
+                overheatBox.SetValue(Mathf.Clamp01((float)(val * scalar + scaleFac)), gaugeMin, 1.0f);
             }
             else
             {
