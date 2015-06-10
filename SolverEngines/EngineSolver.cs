@@ -10,7 +10,7 @@ namespace SolverEngines
     public class EngineSolver
     {
         //freestream flight conditions; static pressure, static temperature, static density, and mach number
-        public double alt, p0, t0, eair0, vel, M0 = 0, rho, mach;
+        public double alt, p0, t0, eair0, vel, M0 = 0, rho, mach, Q;
         public bool oxygen = false;
 
         //total conditions behind inlet
@@ -56,6 +56,7 @@ namespace SolverEngines
             oxygen = hasOxygen;
             vel = velocity;
             mach = inMach;
+            Q = 0.5d * rho * vel * vel;
 
             P1 = inletTherm.P;
             T1 = inletTherm.T;
@@ -68,10 +69,8 @@ namespace SolverEngines
             Cv_c = inletTherm.Cv;
             R_c = inletTherm.R;
 
-
-            M0 = vel / Math.Sqrt(gamma_c * R_c * t0);
-
-            eair0 = Math.Sqrt(gamma_c / R_c / t0);
+            eair0 = Math.Sqrt(gamma_c / (R_c * t0));
+            M0 = vel / eair0;
         }
 
         /// <summary>
