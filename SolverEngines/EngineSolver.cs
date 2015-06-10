@@ -10,30 +10,30 @@ namespace SolverEngines
     public class EngineSolver
     {
         //freestream flight conditions; static pressure, static temperature, static density, and mach number
-        protected double alt, p0, t0, eair0, vel, M0 = 0, rho, mach;
-        protected bool oxygen = false;
+        public double alt, p0, t0, eair0, vel, M0 = 0, rho, mach;
+        public bool oxygen = false;
 
         //total conditions behind inlet
-        protected double P1, T1, Rho1;
+        public double P1, T1, Rho1;
 
         // engine state
-        protected bool running = false;
-        protected double ffFraction = 1d;
+        public bool running = false;
+        public double ffFraction = 1d;
 
         //gas properties at start
-        protected double gamma_c, inv_gamma_c, inv_gamma_cm1;
-        protected double R_c;
-        protected double Cp_c;
-        protected double Cv_c;
+        public double gamma_c, inv_gamma_c, inv_gamma_cm1;
+        public double R_c;
+        public double Cp_c;
+        public double Cv_c;
 
         // current throttle state
-        protected double throttle;
+        public double throttle;
 
         //thrust and Isp and fuel flow of the engine
-        protected double thrust, Isp, fuelFlow;
+        public double thrust, Isp, fuelFlow;
 
         // the string to report when can't thrust
-        protected string statusString = "";
+        public string statusString = "";
 
         public string debugstring;
         //---------------------------------------------------------
