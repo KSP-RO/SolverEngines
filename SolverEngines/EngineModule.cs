@@ -152,7 +152,7 @@ namespace SolverEngines
 
             UpdateFlightCondition(ambientTherm,
                 vessel.altitude,
-                vessel.srfSpeed,
+                vessel.srf_velocity,
                 vessel.mach,
                 vessel.mainBody.atmosphereContainsOxygen);
             CalculateEngineParams();
@@ -226,13 +226,13 @@ namespace SolverEngines
             actualThrottle = Mathf.RoundToInt(currentThrottle * 100f);
         }
 
-        virtual public void UpdateFlightCondition(EngineThermodynamics ambientTherm, double altitude, double vel, double mach, bool oxygen)
+        virtual public void UpdateFlightCondition(EngineThermodynamics ambientTherm, double altitude, Vector3 vel, double mach, bool oxygen)
         {
             // In flight, these are the same and this will just return
             this.ambientTherm.CopyFrom(ambientTherm);
 
             engineSolver.SetEngineState(EngineIgnited, lastPropellantFraction);
-            engineSolver.SetFreestreamAndInlet(ambientTherm, inletTherm, altitude, mach, vel, oxygen);
+            engineSolver.SetFreestreamAndInlet(ambientTherm, inletTherm, altitude, mach, vel.magnitude, oxygen);
             engineSolver.CalculatePerformance(areaRatio, currentThrottle, flowMult, ispMult);
         }
 
