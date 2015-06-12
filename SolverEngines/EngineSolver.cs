@@ -12,6 +12,7 @@ namespace SolverEngines
         //freestream flight conditions; static pressure, static temperature, static density, and mach number
         public double alt, p0, t0, eair0, vel, M0 = 0, rho, mach, Q;
         public bool oxygen = false;
+        public Vector3d velocity;
 
         //total conditions behind inlet
         public double P1, T1, Rho1;
@@ -47,14 +48,15 @@ namespace SolverEngines
         /// <param name="temperature">temperature in K</param>
         /// <param name="velocity">velocity in m/s</param>
         /// <param name="hasOxygen">does the atmosphere contain oxygen</param>
-        virtual public void SetFreestreamAndInlet(EngineThermodynamics ambientTherm, EngineThermodynamics inletTherm, double altitude, double inMach, double velocity, bool hasOxygen)
+        virtual public void SetFreestreamAndInlet(EngineThermodynamics ambientTherm, EngineThermodynamics inletTherm, double altitude, double inMach, Vector3 inVel, bool hasOxygen)
         {
             alt = altitude;
             p0 = ambientTherm.P;
             t0 = ambientTherm.T;
             rho = ambientTherm.Rho;
             oxygen = hasOxygen;
-            vel = velocity;
+            velocity = inVel;
+            vel = velocity.magnitude;
             mach = inMach;
             Q = 0.5d * rho * vel * vel;
 
