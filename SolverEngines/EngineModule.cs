@@ -118,6 +118,8 @@ namespace SolverEngines
         public override void OnLoad(ConfigNode node)
         {
             base.OnLoad(node);
+
+            thrustTransforms = new List<Transform>(part.FindModelTransforms(thrustVectorTransformName));
             // -- will be done on Start - CreateEngine();
         }
 
