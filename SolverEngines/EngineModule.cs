@@ -36,6 +36,9 @@ namespace SolverEngines
         [KSPField]
         public bool useExtTemp = false;
 
+        [KSPField]
+        public bool noShieldedStart = false;
+
         // Testflight interaction
         public double flowMult = 1d;
         public double ispMult = 1d;
@@ -75,6 +78,31 @@ namespace SolverEngines
         virtual public void CreateEngine()
         {
             engineSolver = new EngineSolver();
+        }
+
+        // from ModuleEngines but no shielded check.
+        [KSPEvent(guiActive = true, guiName = "Activate Engine")]
+        virtual public void Activate()
+        {
+            if (!allowRestart && engineShutdown)
+            {
+                return; // If the engines were shutdown previously and restarting is not allowed, prevent restart of engines
+            }
+            if (noShieldedStart && part.ShieldedFromAirstream)
+            {
+                ScreenMessages.PostScreenMessage("<color=orange>[" + part.partInfo.title + "]: Cannot activate while stowed!</color>", 6f, ScreenMessageStyle.UPPER_LEFT);
+                return;
+            }
+
+
+            if (!EngineIgnited) // Don't burst if the engine was already on
+                PlayEngageFX();
+
+            EngineIgnited = true;
+            if (allowShutdown) Events["Shutdown"].active = true;
+            else Events["Shutdown"].active = false;
+            Events["Activate"].active = false;
+
         }
 
         virtual public void Start()
