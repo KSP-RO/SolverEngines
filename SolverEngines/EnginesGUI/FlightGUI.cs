@@ -118,10 +118,10 @@ namespace SolverEngines.EnginesGUI
             if (FlightGUISettings.ShowInletPercent && inAtmosphere && flightSys.EngineArea > 0f)
             {
                 GUIStyle inletPercentStyle = new GUIStyle(GUIUtil.LeftLabel);
-                float.IsInfinity(flightSys.AreaRatio);
+                double.IsInfinity(flightSys.AreaRatio);
 
                 string areaPercentString = "";
-                if (float.IsInfinity(flightSys.AreaRatio) || float.IsNaN(flightSys.AreaRatio))
+                if (double.IsInfinity(flightSys.AreaRatio) || double.IsNaN(flightSys.AreaRatio))
                     areaPercentString = "n/a";
                 else
                 {
