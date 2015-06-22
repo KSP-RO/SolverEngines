@@ -82,7 +82,7 @@ namespace SolverEngines
 
         // from ModuleEngines but no shielded check.
         [KSPEvent(guiActive = true, guiName = "Activate Engine")]
-        virtual public void Activate()
+        new virtual public void Activate()
         {
             if (!allowRestart && engineShutdown)
             {
@@ -102,7 +102,6 @@ namespace SolverEngines
             if (allowShutdown) Events["Shutdown"].active = true;
             else Events["Shutdown"].active = false;
             Events["Activate"].active = false;
-
         }
 
         virtual public void Start()
