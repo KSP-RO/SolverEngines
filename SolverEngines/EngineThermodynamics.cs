@@ -207,8 +207,8 @@ namespace SolverEngines
         public override string ToString()
         {
             string returnString = "";
-            returnString += "T: " + EnginesGUI.GUIUnitsSettings.TemperatureUnits.Format(T);
-            returnString += " P: " + EnginesGUI.GUIUnitsSettings.PressureUnits.Format(P);
+            returnString += "T: " + GUIUnitsSettings.TemperatureUnits.Format(T);
+            returnString += " P: " + GUIUnitsSettings.PressureUnits.Format(P);
             returnString += " Rho: " + Rho.ToString("F2");
             returnString += "\n FF: " + FF.ToString("F3");
             returnString += "\n Cp: " + Cp.ToString("F2");

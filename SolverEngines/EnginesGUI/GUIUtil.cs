@@ -7,7 +7,7 @@ using KSP;
 
 // Parts of this class are taken from FerramAerospaceResearch, Copyright 2014, Michael Ferrara, aka Ferram4, used with permission
 
-namespace SolverEngines.EnginesGUI
+namespace SolverEngines
 {
     public static class GUIUtil
     {
