@@ -80,30 +80,6 @@ namespace SolverEngines
             engineSolver = new EngineSolver();
         }
 
-        // from ModuleEngines but no shielded check.
-        [KSPEvent(guiActive = true, guiName = "Activate Engine")]
-        new virtual public void Activate()
-        {
-            if (!allowRestart && engineShutdown)
-            {
-                return; // If the engines were shutdown previously and restarting is not allowed, prevent restart of engines
-            }
-            if (noShieldedStart && part.ShieldedFromAirstream)
-            {
-                ScreenMessages.PostScreenMessage("<color=orange>[" + part.partInfo.title + "]: Cannot activate while stowed!</color>", 6f, ScreenMessageStyle.UPPER_LEFT);
-                return;
-            }
-
-
-            if (!EngineIgnited) // Don't burst if the engine was already on
-                PlayEngageFX();
-
-            EngineIgnited = true;
-            if (allowShutdown) Events["Shutdown"].active = true;
-            else Events["Shutdown"].active = false;
-            Events["Activate"].active = false;
-        }
-
         virtual public void Start()
         {
             CreateEngine();
@@ -351,6 +327,85 @@ namespace SolverEngines
                 return finalThrust / maxThrust;
             }
         }
+        #region Events and Actions
+        [KSPEvent(guiActive = true, guiName = "Activate Engine")]
+        new virtual public void Activate()
+        {
+            if (!allowRestart && engineShutdown)
+            {
+                return; // If the engines were shutdown previously and restarting is not allowed, prevent restart of engines
+            }
+            if (noShieldedStart && part.ShieldedFromAirstream)
+            {
+                ScreenMessages.PostScreenMessage("<color=orange>[" + part.partInfo.title + "]: Cannot activate while stowed!</color>", 6f, ScreenMessageStyle.UPPER_LEFT);
+                return;
+            }
+
+
+            if (!EngineIgnited) // Don't burst if the engine was already on
+                PlayEngageFX();
+
+            EngineIgnited = true;
+            if (allowShutdown) Events["Shutdown"].active = true;
+            else Events["Shutdown"].active = false;
+            Events["Activate"].active = false;
+        }
+
+        [KSPEvent(guiActive = true, guiName = "Shutdown Engine")]
+        new virtual public void Shutdown()
+        {
+            if (!allowShutdown) return; // If engine cannot be shutdown. Ignore the event.
+            if (!allowRestart) // Disable activate events if restarting not allowed
+            {
+                engineShutdown = true;
+                Events["Shutdown"].active = false;
+                Events["Activate"].active = false;
+            }
+            else
+            {
+                Events["Shutdown"].active = false;
+                Events["Activate"].active = true;
+            }
+            EngineIgnited = false;
+
+            PlayShutdownFX();
+
+
+            Propellant p;
+            int pC = propellants.Count;
+            for (int i = 0; i < pC; ++i)
+            {
+                p = propellants[i];
+                if (PropellantGauges.ContainsKey(p))
+                {
+                    part.stackIcon.RemoveInfo(PropellantGauges[p]);
+                }
+            }
+            PropellantGauges.Clear();
+        }
+
+        [KSPAction("Toggle Engine")]
+        new virtual public void OnAction(KSPActionParam param)
+        {
+            if (!EngineIgnited)
+                Activate();
+            else
+                Shutdown();
+        }
+
+        [KSPAction("Shutdown Engine")]
+        new virtual public void ShutdownAction(KSPActionParam param)
+        {
+            Shutdown();
+        }
+
+        [KSPAction("Activate Engine")]
+        new virtual public void ActivateAction(KSPActionParam param)
+        {
+            Activate();
+        }
+        #endregion
+        #region Info
         new virtual public string GetModuleTitle()
         {
             return "EngineSolver Engine";
@@ -364,8 +419,10 @@ namespace SolverEngines
         {
             return "<b>Unconfigured</b>";
         }
-
         #endregion
+        #endregion
+
+        
 
         #region Base Methods
         protected void SetFlameout()
