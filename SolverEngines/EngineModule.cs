@@ -11,6 +11,25 @@ using System.Reflection;
 namespace SolverEngines
 {
     /// <summary>
+    /// Property describing parameters which will be input into an engine solver
+    /// </summary>
+    [System.AttributeUsage(System.AttributeTargets.Field)]
+    public class EngineParameter : Attribute { }
+
+    /// <summary>
+    /// Property describing pieces of data which will be used to fit particular engine parameters (those having the EngineFitResult property)
+    /// Examples: static thrust, TSFC
+    /// </summary>
+    [System.AttributeUsage(System.AttributeTargets.Field)]
+    public class EngineFitData : Attribute { }
+
+    /// <summary>
+    /// Property describing engine parameters which will be fit based on EngineFitData
+    /// </summary>
+    [System.AttributeUsage(System.AttributeTargets.Field)]
+    public class EngineFitResult : EngineParameter { }
+
+    /// <summary>
     /// Base module for AJE engines
     /// Derive from this for a real engine; this *will not work* alone.
     /// </summary>
@@ -18,8 +37,8 @@ namespace SolverEngines
     {
         // base fields
 
-        [KSPField(isPersistant = false, guiActiveEditor = true)]
-        public double Need_Area;
+        [KSPField(isPersistant = false, guiActiveEditor = true, guiFormat="F3")]
+        public float Need_Area;
 
         [KSPField(isPersistant = false, guiActive = true, guiName = "Current Throttle", guiUnits = "%")]
         public int actualThrottle;
@@ -73,11 +92,43 @@ namespace SolverEngines
 
         protected const double invg0 = 1d / 9.80665d;
 
+        // Engine fitting stuff
+        private List<FieldInfo> engineFitInputs = new List<FieldInfo>();
+        private List<FieldInfo> engineFitResults = new List<FieldInfo>();
+
         #region Overridable Methods
+
+        public override void OnAwake()
+        {
+            base.OnAwake();
+
+            engineFitResults.Clear();
+            engineFitInputs.Clear();
+
+            FieldInfo[] fields = this.GetType().GetFields();
+            foreach (FieldInfo field in fields)
+            {
+                object[] attributes = field.GetCustomAttributes(true);
+                foreach (object attribute in attributes)
+                {
+                    if (attribute is EngineFitResult)
+                        engineFitResults.Add(field);
+                    else if (attribute is EngineParameter || attribute is EngineFitData)
+                        // Exclude fit results here
+                        engineFitInputs.Add(field);
+                }
+            }
+        }
 
         virtual public void CreateEngine()
         {
             engineSolver = new EngineSolver();
+        }
+
+        virtual public void CreateEngineIfNecessary()
+        {
+            if (engineSolver == null)
+                CreateEngine();
         }
 
         virtual public void Start()
@@ -87,8 +138,8 @@ namespace SolverEngines
                 ambientTherm = new EngineThermodynamics();
             if(inletTherm == null)
                 inletTherm = new EngineThermodynamics();
-            Need_Area = engineSolver.GetArea();
-            Fields["Need_Area"].guiActiveEditor = Need_Area > 0;
+            Need_Area = (float)engineSolver.GetArea();
+            Fields["Need_Area"].guiActiveEditor = Need_Area > 0f;
 
             currentThrottle = 0f;
             flameout = false;
@@ -116,6 +167,8 @@ namespace SolverEngines
             for (int i = 0; i < mCount; ++i)
                 if (part.Modules[i] is ModuleAnimateEmissive)
                     emissiveAnims.Add(part.Modules[i] as ModuleAnimateEmissive);
+
+            FitEngineIfNecessary();
         }
 
         public override void OnLoad(ConfigNode node)
@@ -327,6 +380,90 @@ namespace SolverEngines
                 return finalThrust / maxThrust;
             }
         }
+
+        #region Engine Fitting
+
+        virtual public bool CanFitEngine()
+        {
+            return false;
+        }
+
+        virtual public void FitEngineIfNecessary()
+        {
+            if (!CanFitEngine())
+                return;
+            if (engineFitResults.Count == 0)
+                return;
+
+            bool doFit = false;
+
+            ConfigNode node = EngineDatabase.GetNodeForEngine(this);
+            if (node != null)
+            {
+                doFit |= EngineDatabase.PluginUpdateCheck(this, node);
+
+                foreach (FieldInfo field in engineFitInputs)
+                {
+                    if (node.GetValue(field.Name) != field.GetValue(this).ToString())
+                    {
+                        doFit = true;
+                        break;
+                    }
+                }
+                if (!doFit)
+                {
+                    Debug.Log("[" + this.GetType().Name + "] Reading engine params from cache for engine " + part.name);
+
+                    CreateEngineIfNecessary();
+
+                    foreach (FieldInfo field in engineFitResults)
+                    {
+                        string value = node.GetValue(field.Name);
+                        if (value != null)
+                            field.SetValue(this, Convert.ChangeType(value, field.FieldType));
+                    }
+                    PushFitParamsToSolver();
+                }
+            }
+            else
+            {
+                doFit = true;
+            }
+
+            if (doFit)
+            {
+                Debug.Log("[" + this.GetType().Name + "] Fitting params for engine " + part.name);
+                CreateEngineIfNecessary();
+                DoEngineFit();
+
+                ConfigNode newNode = new ConfigNode();
+
+                foreach (FieldInfo field in engineFitInputs)
+                {
+                    newNode.SetValue(field.Name, field.GetValue(this).ToString(), true);
+                }
+
+                foreach (FieldInfo field in engineFitResults)
+                {
+                    newNode.SetValue(field.Name, field.GetValue(this).ToString(), true);
+                }
+
+                EngineDatabase.SetNodeForEngine(this, newNode);
+            }
+        }
+
+        virtual public void DoEngineFit()
+        {
+            throw new NotImplementedException();
+        }
+
+        virtual public void PushFitParamsToSolver()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
         #region Events and Actions
         [KSPEvent(guiActive = true, guiName = "Activate Engine")]
         new virtual public void Activate()
@@ -405,6 +542,7 @@ namespace SolverEngines
             Activate();
         }
         #endregion
+
         #region Info
         new virtual public string GetModuleTitle()
         {

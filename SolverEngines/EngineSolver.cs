@@ -72,7 +72,7 @@ namespace SolverEngines
             R_c = inletTherm.R;
 
             eair0 = Math.Sqrt(gamma_c / (R_c * t0));
-            M0 = vel / eair0;
+            M0 = vel / ambientTherm.Vs;
         }
 
         /// <summary>
@@ -120,6 +120,23 @@ namespace SolverEngines
         virtual public float GetFXRunning() { return running && ffFraction > 0d ? (float)throttle : 0f; }
         virtual public float GetFXThrottle() { return running && ffFraction > 0d ? (float)throttle : 0f; }
         virtual public float GetFXSpool() { return running && ffFraction > 0d ? (float)throttle : 0f; }
+
+        /// <summary>
+        /// Sets the freestream properties to static conditions : sea level and not moving
+        /// </summary>
+        /// <param name="usePlanetarium">Whether to use Planetarium.fetch.Home to get static conditions or use standard Earth conditions</param>
+        /// <param name="overallTPR">Total pressure recovery of inlet</param>
+        protected void SetStaticConditions(bool usePlanetarium = true, double overallTPR = 1d)
+        {
+            EngineThermodynamics ambientTherm = new EngineThermodynamics();
+            ambientTherm.FromStandardConditions(usePlanetarium);
+
+            EngineThermodynamics inletTherm = new EngineThermodynamics();
+            inletTherm.CopyFrom(ambientTherm);
+            inletTherm.P *= overallTPR;
+
+            SetFreestreamAndInlet(ambientTherm, inletTherm, 0d, 0d, Vector3.zero, true);
+        }
 
 
         protected double CalculateGamma(double temperature, double fuel_fraction)

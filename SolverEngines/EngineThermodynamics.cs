@@ -204,6 +204,25 @@ namespace SolverEngines
             Far = 0d; // Recalculates, so no need to do by hand
         }
 
+        public void FromStandardConditions(bool usePlanetarium = false)
+        {
+            P = 101325d;
+            _T = 288.15d;
+            Rho = 1.225d;
+            if (usePlanetarium && Planetarium.fetch != null)
+            {
+                CelestialBody home = Planetarium.fetch.Home;
+                if (home != null)
+                {
+                    P = home.GetPressure(0d) * 1000d;
+                    _T = home.GetTemperature(0d);
+                    Rho = home.GetDensity(P, T);
+                }
+            }
+
+            Far = 0d;
+        }
+
         public override string ToString()
         {
             string returnString = "";
