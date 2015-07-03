@@ -404,7 +404,9 @@ namespace SolverEngines
 
                 foreach (FieldInfo field in engineFitInputs)
                 {
-                    if (node.GetValue(field.Name) != field.GetValue(this).ToString())
+                    // Converts from string
+                    object databaseValue = Convert.ChangeType(node.GetValue(field.Name), field.FieldType);
+                    if (!databaseValue.Equals(field.GetValue(this)))
                     {
                         doFit = true;
                         break;
