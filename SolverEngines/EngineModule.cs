@@ -438,7 +438,20 @@ namespace SolverEngines
             if (doFit)
             {
                 Debug.Log("[" + this.GetType().Name + "] Fitting params for engine " + part.name);
+
+                // Still pull values from database - they might be correct
+                if (node != null)
+                {
+                    foreach (FieldInfo field in engineFitResults)
+                    {
+                        string value = node.GetValue(field.Name);
+                        if (value != null)
+                            field.SetValue(this, Convert.ChangeType(value, field.FieldType));
+                    }
+                }
+
                 CreateEngineIfNecessary();
+                PushFitParamsToSolver();
                 DoEngineFit();
 
                 ConfigNode newNode = new ConfigNode();
