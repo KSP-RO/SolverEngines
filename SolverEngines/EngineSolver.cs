@@ -32,8 +32,8 @@ namespace SolverEngines
         // current throttle state
         public double throttle;
 
-        //thrust and Isp and fuel flow of the engine
-        public double thrust, Isp, fuelFlow;
+        //thrust, Isp, SFC, and fuel flow of the engine
+        public double thrust, Isp, SFC, fuelFlow;
 
         // the string to report when can't thrust
         public string statusString = "";
@@ -102,6 +102,7 @@ namespace SolverEngines
 
             fuelFlow = 0d;
             Isp = 0d;
+            SFC = 0d;
             thrust = 0d;
             throttle = commandedThrottle;
         }
@@ -109,6 +110,7 @@ namespace SolverEngines
         // getters for base fields
         public double GetThrust() { return thrust; }
         public double GetIsp() { return Isp; }
+        public double GetSFC() { return SFC; }
         public double GetFuelFlow() { return fuelFlow; }
         public double GetM0() { return M0; }
 
