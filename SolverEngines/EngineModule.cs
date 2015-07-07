@@ -11,25 +11,6 @@ using System.Reflection;
 namespace SolverEngines
 {
     /// <summary>
-    /// Property describing parameters which will be input into an engine solver
-    /// </summary>
-    [System.AttributeUsage(System.AttributeTargets.Field)]
-    public class EngineParameter : Attribute { }
-
-    /// <summary>
-    /// Property describing pieces of data which will be used to fit particular engine parameters (those having the EngineFitResult property)
-    /// Examples: static thrust, TSFC
-    /// </summary>
-    [System.AttributeUsage(System.AttributeTargets.Field)]
-    public class EngineFitData : Attribute { }
-
-    /// <summary>
-    /// Property describing engine parameters which will be fit based on EngineFitData
-    /// </summary>
-    [System.AttributeUsage(System.AttributeTargets.Field)]
-    public class EngineFitResult : EngineParameter { }
-
-    /// <summary>
     /// Base module for AJE engines
     /// Derive from this for a real engine; this *will not work* alone.
     /// </summary>
@@ -93,8 +74,7 @@ namespace SolverEngines
         protected const double invg0 = 1d / 9.80665d;
 
         // Engine fitting stuff
-        private List<FieldInfo> engineFitInputs = new List<FieldInfo>();
-        private List<FieldInfo> engineFitResults = new List<FieldInfo>();
+        protected List<EngineParameterInfo> engineFitParameters = new List<EngineParameterInfo>();
 
         #region Overridable Methods
 
@@ -102,8 +82,7 @@ namespace SolverEngines
         {
             base.OnAwake();
 
-            engineFitResults.Clear();
-            engineFitInputs.Clear();
+            engineFitParameters.Clear();
 
             FieldInfo[] fields = this.GetType().GetFields();
             foreach (FieldInfo field in fields)
@@ -111,11 +90,8 @@ namespace SolverEngines
                 object[] attributes = field.GetCustomAttributes(true);
                 foreach (object attribute in attributes)
                 {
-                    if (attribute is EngineFitResult)
-                        engineFitResults.Add(field);
-                    else if (attribute is EngineParameter || attribute is EngineFitData)
-                        // Exclude fit results here
-                        engineFitInputs.Add(field);
+                    if (attribute is EngineParameter)
+                        engineFitParameters.Add(new EngineParameterInfo(this, field, attribute as EngineParameter));
                 }
             }
         }
@@ -383,33 +359,47 @@ namespace SolverEngines
 
         #region Engine Fitting
 
-        virtual public bool CanFitEngine()
+        virtual public bool ShouldFitParameter(EngineParameterInfo info)
         {
-            return false;
+            if (info.Param is EngineFitResult)
+                return true;
+            else
+                return false;
         }
 
         virtual public void FitEngineIfNecessary()
         {
-            if (!CanFitEngine())
-                return;
-            if (engineFitResults.Count == 0)
+            bool doFit = false;
+
+            foreach (EngineParameterInfo entry in engineFitParameters)
+            {
+                if (ShouldFitParameter(entry))
+                {
+                    doFit = true;
+                    break;
+                }
+
+            }
+
+            // No parameters can be fit
+            if (!doFit)
                 return;
 
-            bool doFit = false;
+            doFit = false;
 
             ConfigNode node = EngineDatabase.GetNodeForEngine(this);
             if (node != null)
             {
                 doFit |= EngineDatabase.PluginUpdateCheck(this, node);
 
-                foreach (FieldInfo field in engineFitInputs)
+                // Check for changes
+                foreach (EngineParameterInfo entry in engineFitParameters)
                 {
-                    // Converts from string
-                    string databaseString = node.GetValue(field.Name);
-                    object databaseValue = null;
-                    if (databaseString != null)
-                        databaseValue = Convert.ChangeType(node.GetValue(field.Name), field.FieldType);
-                    if (databaseValue != null && !databaseValue.Equals(field.GetValue(this)))
+                    // Don't check things we're going to fit
+                    if (ShouldFitParameter(entry))
+                        continue;
+
+                    if (!entry.EqualsValueInNode(node))
                     {
                         doFit = true;
                         break;
@@ -421,11 +411,11 @@ namespace SolverEngines
 
                     CreateEngineIfNecessary();
 
-                    foreach (FieldInfo field in engineFitResults)
+                    foreach (EngineParameterInfo entry in engineFitParameters)
                     {
-                        string value = node.GetValue(field.Name);
-                        if (value != null)
-                            field.SetValue(this, Convert.ChangeType(value, field.FieldType));
+                        // Only copy things that would be fitted
+                        if (ShouldFitParameter(entry))
+                            entry.SetValueFromNode(node);
                     }
                     PushFitParamsToSolver();
                 }
@@ -439,31 +429,24 @@ namespace SolverEngines
             {
                 Debug.Log("[" + this.GetType().Name + "] Fitting params for engine " + part.name);
 
-                // Still pull values from database - they might be correct
-                if (node != null)
-                {
-                    foreach (FieldInfo field in engineFitResults)
-                    {
-                        string value = node.GetValue(field.Name);
-                        if (value != null)
-                            field.SetValue(this, Convert.ChangeType(value, field.FieldType));
-                    }
-                }
-
                 CreateEngineIfNecessary();
+
+                // Copy valid fit results from database - they might still be correct
+                foreach (EngineParameterInfo entry in engineFitParameters)
+                {
+                    // Only copy things that would be fitted
+                    if (ShouldFitParameter(entry))
+                        entry.SetValueFromNode(node);
+                }
                 PushFitParamsToSolver();
+
                 DoEngineFit();
 
                 ConfigNode newNode = new ConfigNode();
 
-                foreach (FieldInfo field in engineFitInputs)
+                foreach (EngineParameterInfo entry in engineFitParameters)
                 {
-                    newNode.SetValue(field.Name, field.GetValue(this).ToString(), true);
-                }
-
-                foreach (FieldInfo field in engineFitResults)
-                {
-                    newNode.SetValue(field.Name, field.GetValue(this).ToString(), true);
+                    newNode.SetValue(entry.Field.Name, entry.GetValueStr(), true);
                 }
 
                 EngineDatabase.SetNodeForEngine(this, newNode);

@@ -33,6 +33,7 @@
   <ItemGroup>
     <Compile Include="AJEInlet.cs" />
     <Compile Include="EngineDatabase.cs" />
+    <Compile Include="EngineFitUtil.cs" />
     <Compile Include="EngineModule.cs" />
     <Compile Include="EngineSolver.cs" />
     <Compile Include="EngineThermodynamics.cs" />
