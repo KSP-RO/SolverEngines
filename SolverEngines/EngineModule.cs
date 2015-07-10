@@ -542,6 +542,18 @@ namespace SolverEngines
         {
             Activate();
         }
+        // from base, but here so we use our (overridable) methods.
+        public override void OnActive()
+        {
+            if (!EngineIgnited && !manuallyOverridden)
+            {
+                if (!staged)
+                {
+                    Activate();
+                    staged = EngineIgnited;
+                }
+            }
+        }
         #endregion
 
         #region Info
