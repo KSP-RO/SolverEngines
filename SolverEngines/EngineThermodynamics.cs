@@ -61,10 +61,6 @@ namespace SolverEngines
         /// </summary>
         public double R { get; private set; }
         /// <summary>
-        /// Speed of sound
-        /// </summary>
-        public double Vs { get; private set; } // Sound speed
-        /// <summary>
         /// Fuel-air ratio
         /// </summary>
         public double Far
@@ -121,7 +117,6 @@ namespace SolverEngines
             Cv = 0d;
             Gamma = 0d;
             R = 0d;
-            Vs = 0d;
             MassRatio = 1d;
         }
 
@@ -142,7 +137,6 @@ namespace SolverEngines
             Cv = t.Cv;
             Gamma = t.Gamma;
             R = t.R;
-            Vs = t.Vs;
             MassRatio = t.MassRatio;
         }
 
@@ -153,7 +147,6 @@ namespace SolverEngines
             Gamma = 1.4d - 0.1d * tDelt * (1d + FF);
             Cv = Cp / Gamma;
             R = Cv * (Gamma - 1d);
-            Vs = Math.Sqrt(Gamma * R * T);
             Rho = P / R / T;
         }
 
@@ -258,7 +251,7 @@ namespace SolverEngines
             CopyFrom(t);
             // Max fuel-air ratio - don't want to inject more fuel than can be burnt in air
             if (maxFar > 0d)
-                maxTemp = Math.Max(maxTemp, (maxFar - Far) * heatOfFuel / Cp + T);
+                maxTemp = Math.Min(maxTemp, (maxFar - Far) * heatOfFuel / Cp + T);
             double delta = (maxTemp - T) * throttle;
 
             _T += delta;
@@ -397,6 +390,73 @@ namespace SolverEngines
             }
 
             Far = 0d;
+        }
+
+        /// <summary>
+        /// Gets the speed of sound in isentropic flow for a given mach number
+        /// </summary>
+        /// <param name="mach">Mach to get speed of sound for</param>
+        /// <returns>Speed of sound, m/s</returns>
+        public double SpeedOfSound(double mach)
+        {
+            return Math.Sqrt(Gamma * R * T / (0.5 * (Gamma - 1d) * mach * mach + 1d));
+        }
+
+        /// <summary>
+        /// Gets the speed of sound for a given velocity in isentropic flow
+        /// </summary>
+        /// <param name="velocity">Speed to get the speed of sound for, m/s</param>
+        /// <returns>Speed of sound, m/s</returns>
+        public double SpeedOfSoundFromVelocity(double velocity)
+        {
+            double csq = Gamma * R * T - 0.5 * (Gamma - 1d) * velocity * velocity;
+            if (csq <= 0.0)
+            {
+                Debug.LogWarning("[" + this.GetType().Name + "] Got a velocity which is too large for this isentropic flow.  Stack trace: \n" + System.Environment.StackTrace);
+                return 0d;
+            }
+            return Math.Sqrt(csq);
+        }
+
+        /// <summary>
+        /// Calculates the mach number in isentropic flow froma a given speed
+        /// </summary>
+        /// <param name="velocity">Speed to calculate mach number from, m/s</param>
+        /// <returns>Mach number</returns>
+        public double CalculateMach(double velocity)
+        {
+            return velocity / SpeedOfSoundFromVelocity(velocity);
+        }
+
+        /// <summary>
+        /// Calculates isentropic mass flow for a given area and mach number
+        /// </summary>
+        /// <param name="area">Flow cross section, m^2</param>
+        /// <param name="mach">Mach number of flow</param>
+        /// <returns>Mass flow, kg/s</returns>
+        public double CalculateMassFlow(double area, double mach)
+        {
+            return area * P * Math.Sqrt(Gamma / R / T) * mach * Math.Pow(0.5d * (Gamma - 1d) * mach * mach + 1d, -0.5 * (Gamma + 1d) / (Gamma - 1d));
+        }
+
+        /// <summary>
+        /// Calculates the flow cross section for a given mass flow and mach
+        /// </summary>
+        /// <param name="mdot">Mass flow, kg/s</param>
+        /// <param name="mach">Mach number</param>
+        /// <returns>Cross section area, m^2</returns>
+        public double CalculateFlowArea(double mdot, double mach)
+        {
+            return mdot / P * Math.Sqrt(T * R / Gamma) / mach * Math.Pow(0.5d * (Gamma - 1d) * mach * mach + 1d, 0.5 * (Gamma + 1d) / (Gamma - 1d));
+        }
+
+        /// <summary>
+        /// Pressure at which isentropic flow will choke
+        /// </summary>
+        /// <returns>Pressure, pascals</returns>
+        public double ChokedPressure()
+        {
+            return P / Math.Pow(0.5 * (Gamma + 1d), Cp / R);
         }
 
         public override string ToString()
