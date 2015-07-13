@@ -77,13 +77,14 @@ namespace SolverEngines
 
         public void SetValue(string value)
         {
-            if (value == null)
-                return;
-            Field.SetValue(Module, Convert.ChangeType(value, Field.FieldType));
+            if (value != null)
+                Field.SetValue(Module, Convert.ChangeType(value, Field.FieldType));
         }
 
         public bool EqualsValueInNode(ConfigNode node)
         {
+            if (node == null)
+                return false;
             string databaseString = node.GetValue(Field.Name);
             object databaseValue = null;
             if (databaseString != null)
@@ -93,7 +94,8 @@ namespace SolverEngines
 
         public void SetValueFromNode(ConfigNode node)
         {
-            SetValue(node.GetValue(Field.Name));
+            if (node != null)
+                SetValue(node.GetValue(Field.Name));
         }
     }
 }
