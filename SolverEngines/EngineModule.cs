@@ -405,7 +405,7 @@ namespace SolverEngines
                         break;
                     }
                 }
-                if (!doFit)
+                if (!doFit && node != null)
                 {
                     Debug.Log("[" + this.GetType().Name + "] Reading engine params from cache for engine " + part.name);
 
@@ -432,13 +432,16 @@ namespace SolverEngines
                 CreateEngineIfNecessary();
 
                 // Copy valid fit results from database - they might still be correct
-                foreach (EngineParameterInfo entry in engineFitParameters)
+                if (node != null)
                 {
-                    // Only copy things that would be fitted
-                    if (ShouldFitParameter(entry))
-                        entry.SetValueFromNode(node);
+                    foreach (EngineParameterInfo entry in engineFitParameters)
+                    {
+                        // Only copy things that would be fitted
+                        if (ShouldFitParameter(entry))
+                            entry.SetValueFromNode(node);
+                    }
+                    PushFitParamsToSolver();
                 }
-                PushFitParamsToSolver();
 
                 DoEngineFit();
 
@@ -446,7 +449,7 @@ namespace SolverEngines
 
                 foreach (EngineParameterInfo entry in engineFitParameters)
                 {
-                    newNode.SetValue(entry.Field.Name, entry.GetValueStr(), true);
+                    newNode.SetValue(entry.Name, entry.GetValueStr(), true);
                 }
 
                 EngineDatabase.SetNodeForEngine(this, newNode);

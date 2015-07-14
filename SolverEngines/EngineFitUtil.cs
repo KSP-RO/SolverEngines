@@ -65,37 +65,92 @@ namespace SolverEngines
             return !p1.Equals(p2);
         }
 
+        public string Name
+        {
+            get
+            {
+                return Field.Name;
+            }
+        }
+
+        public Type FieldType
+        {
+            get
+            {
+                return Field.FieldType;
+            }
+        }
+
+        /// <summary>
+        /// Gets the value of the associated field
+        /// </summary>
+        /// <returns>Value of the field, as the type of the field</returns>
         public object GetValue()
         {
             return Field.GetValue(Module);
         }
 
+        /// <summary>
+        /// Gets the value of the associated field as a string by calling ToString() on the field value
+        /// </summary>
+        /// <returns>Field value as a string</returns>
         public string GetValueStr()
         {
             return GetValue().ToString();
         }
 
+        /// <summary>
+        /// Set the value of the field to the value in a string
+        /// Attempts to convert the string to the field type, will throw an exception if this fails
+        /// </summary>
+        /// <param name="value">Field value as a string</param>
         public void SetValue(string value)
         {
-            if (value != null)
-                Field.SetValue(Module, Convert.ChangeType(value, Field.FieldType));
+            Field.SetValue(Module, Convert.ChangeType(value, FieldType));
         }
 
+        /// <summary>
+        /// Check whether the value of this field agrees with the value in a config node
+        /// If node is null, will return false
+        /// Attempts to convert the string value from node into the type of the field, will throw an exception if this fails
+        /// </summary>
+        /// <param name="node">Config node to check</param>
+        /// <returns>true, if the value of the field is equal to the value in the config node, false otherwise</returns>
         public bool EqualsValueInNode(ConfigNode node)
         {
             if (node == null)
                 return false;
-            string databaseString = node.GetValue(Field.Name);
+            string databaseString = node.GetValue(Name);
             object databaseValue = null;
             if (databaseString != null)
-                databaseValue = Convert.ChangeType(node.GetValue(Field.Name), Field.FieldType);
+                databaseValue = Convert.ChangeType(node.GetValue(Name), FieldType);
             return Field.GetValue(Module).Equals(databaseValue);
         }
 
-        public void SetValueFromNode(ConfigNode node)
+        /// <summary>
+        /// Try to set the value of this field from the value in a config node
+        /// If the field cannot be found in the config node, will return false
+        /// If the type conversion fails, will return false
+        /// </summary>
+        /// <param name="node">Config node to read the value from</param>
+        /// <returns>true if the operation was successful, false otherwise</returns>
+        public bool SetValueFromNode(ConfigNode node)
         {
-            if (node != null)
-                SetValue(node.GetValue(Field.Name));
+            string value = node.GetValue(Name);
+            if (value != null)
+            {
+                try
+                {
+                    SetValue(value);
+                }
+                catch
+                {
+                    return false;
+                }
+                return true;
+            }
+            
+            return false;
         }
     }
 }
