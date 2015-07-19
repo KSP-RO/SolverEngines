@@ -18,7 +18,7 @@ namespace SolverEngines
     {
         // base fields
 
-        [KSPField(isPersistant = false, guiActiveEditor = true, guiFormat="F3")]
+        [KSPField(isPersistant = false, guiActiveEditor = true, guiFormat = "F3")]
         public float Need_Area;
 
         [KSPField(isPersistant = false, guiActive = true, guiName = "Current Throttle", guiUnits = "%")]
@@ -94,6 +94,8 @@ namespace SolverEngines
                         engineFitParameters.Add(new EngineParameterInfo(this, field, attribute as EngineParameter));
                 }
             }
+
+            HideEventsActions();
         }
 
         virtual public void CreateEngine()
@@ -110,9 +112,9 @@ namespace SolverEngines
         virtual public void Start()
         {
             CreateEngine();
-            if(ambientTherm == null)
+            if (ambientTherm == null)
                 ambientTherm = new EngineThermodynamics();
-            if(inletTherm == null)
+            if (inletTherm == null)
                 inletTherm = new EngineThermodynamics();
             Need_Area = (float)engineSolver.GetArea();
             Fields["Need_Area"].guiActiveEditor = Need_Area > 0f;
@@ -121,6 +123,8 @@ namespace SolverEngines
             flameout = false;
             SetUnflameout();
             Fields["fuelFlowGui"].guiUnits = " kg/sec";
+
+            HideEventsActions();
         }
 
         public override void OnStart(PartModule.StartState state)
@@ -145,6 +149,31 @@ namespace SolverEngines
                     emissiveAnims.Add(part.Modules[i] as ModuleAnimateEmissive);
 
             FitEngineIfNecessary();
+
+            HideEventsActions();
+            // Set up ours
+            Events["vShutdown"].active = false;
+            Events["vActivate"].active = false;
+
+            if (state != StartState.PreLaunch)
+            {
+                if (EngineIgnited)
+                {
+                    if (allowShutdown)
+                        Events["vShutdown"].active = true;
+                    else
+                        Events["vShutdown"].active = false;
+                    Events["vActivate"].active = false;
+                }
+                else
+                {
+                    Events["vShutdown"].active = false;
+                    if (!allowRestart && engineShutdown)
+                        Events["vActivate"].active = false;
+                    else
+                        Events["vActivate"].active = true;
+                }
+            }
         }
 
         public override void OnLoad(ConfigNode node)
@@ -469,8 +498,12 @@ namespace SolverEngines
         #endregion
 
         #region Events and Actions
+        new public void Activate()
+        {
+            vActivate();
+        }
         [KSPEvent(guiActive = true, guiName = "Activate Engine")]
-        new virtual public void Activate()
+        virtual public void vActivate()
         {
             if (!allowRestart && engineShutdown)
             {
@@ -492,8 +525,12 @@ namespace SolverEngines
             Events["Activate"].active = false;
         }
 
+        new public void Shutdown()
+        {
+            vShutdown();
+        }
         [KSPEvent(guiActive = true, guiName = "Shutdown Engine")]
-        new virtual public void Shutdown()
+        virtual public void vShutdown()
         {
             if (!allowShutdown) return; // If engine cannot be shutdown. Ignore the event.
             if (!allowRestart) // Disable activate events if restarting not allowed
@@ -525,25 +562,37 @@ namespace SolverEngines
             PropellantGauges.Clear();
         }
 
+        new public void OnAction(KSPActionParam param)
+        {
+            vOnAction(param);
+        }
         [KSPAction("Toggle Engine")]
-        new virtual public void OnAction(KSPActionParam param)
+        virtual public void vOnAction(KSPActionParam param)
         {
             if (!EngineIgnited)
-                Activate();
+                vActivate();
             else
-                Shutdown();
+                vShutdown();
         }
 
+        new public void ShutdownAction(KSPActionParam param)
+        {
+            vShutdownAction(param);
+        }
         [KSPAction("Shutdown Engine")]
-        new virtual public void ShutdownAction(KSPActionParam param)
+        virtual public void vShutdownAction(KSPActionParam param)
         {
-            Shutdown();
+            vShutdown();
         }
 
-        [KSPAction("Activate Engine")]
-        new virtual public void ActivateAction(KSPActionParam param)
+        new public void ActivateAction(KSPActionParam param)
         {
-            Activate();
+            vActivateAction(param);
+        }
+        [KSPAction("Activate Engine")]
+        virtual public void vActivateAction(KSPActionParam param)
+        {
+            vActivate();
         }
         // from base, but here so we use our (overridable) methods.
         public override void OnActive()
@@ -552,7 +601,7 @@ namespace SolverEngines
             {
                 if (!staged)
                 {
-                    Activate();
+                    vActivate();
                     staged = EngineIgnited;
                 }
             }
@@ -576,7 +625,7 @@ namespace SolverEngines
         #endregion
         #endregion
 
-        
+
 
         #region Base Methods
         protected void SetFlameout()
@@ -624,6 +673,14 @@ namespace SolverEngines
                     overheatBox = null;
                 }
             }
+        }
+
+        protected void HideEventsActions()
+        {
+            // Hide old events/actions
+            Events["Activate"].active = Events["Activate"].guiActive = Events["Activate"].guiActiveEditor = Events["Activate"].guiActiveUnfocused = false;
+            Events["Shutdown"].active = Events["Shutdown"].guiActive = Events["Shutdown"].guiActiveEditor = Events["Shutdown"].guiActiveUnfocused = false;
+            Actions["OnAction"].active = Actions["ShutdownAction"].active = Actions["ActivateAction"].active = false;
         }
 
         protected static string FormatTime(double time)
