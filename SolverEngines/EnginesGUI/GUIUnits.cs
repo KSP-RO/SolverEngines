@@ -6,7 +6,7 @@ using System.Reflection;
 using UnityEngine;
 using KSP;
 
-namespace SolverEngines
+namespace SolverEngines.EnginesGUI
 {
     public static class GUIUnits
     {

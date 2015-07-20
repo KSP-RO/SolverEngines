@@ -7,7 +7,7 @@ using KSP;
 
 // Parts of this file are taken from FerramAerospaceResearch, Copyright 2015, Michael Ferrara, aka Ferram4, used with permission
 
-namespace SolverEngines
+namespace SolverEngines.EnginesGUI
 {
     public class EnginesFlightGUI : VesselModule
     {
