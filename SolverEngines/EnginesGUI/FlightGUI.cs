@@ -270,7 +270,7 @@ namespace SolverEngines
         {
             if (EnginesFlightButtonBlizzy == null)
             {
-                EnginesFlightButtonBlizzy = ToolbarManager.Instance.add("Engines GUI", "EnginesFlightButton");
+                EnginesFlightButtonBlizzy = ToolbarManager.Instance.add("EnginesGUI", "EnginesFlightButton");
                 EnginesFlightButtonBlizzy.TexturePath = "SolverEngines/Icons/EnginesIconBlizzy";
                 EnginesFlightButtonBlizzy.ToolTip = "Engines GUI";
                 EnginesFlightButtonBlizzy.OnClick += (e) => ShowFlightGUIWindow = !ShowFlightGUIWindow;
