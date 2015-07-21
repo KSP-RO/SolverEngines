@@ -507,7 +507,7 @@ namespace SolverEngines
         {
             if (!allowRestart && engineShutdown)
             {
-                return; // If the engines were shutdown previously and restarting is not allowed, prevent restart of engines
+                return;
             }
             if (noShieldedStart && part.ShieldedFromAirstream)
             {
@@ -516,13 +516,16 @@ namespace SolverEngines
             }
 
 
-            if (!EngineIgnited) // Don't burst if the engine was already on
+            if (!EngineIgnited)
                 PlayEngageFX();
 
             EngineIgnited = true;
-            if (allowShutdown) Events["Shutdown"].active = true;
-            else Events["Shutdown"].active = false;
-            Events["Activate"].active = false;
+            if (allowShutdown)
+                Events["vShutdown"].active = true;
+            else
+                Events["vShutdown"].active = false;
+
+            Events["vActivate"].active = false;
         }
 
         new public void Shutdown()
@@ -532,32 +535,33 @@ namespace SolverEngines
         [KSPEvent(guiActive = true, guiName = "Shutdown Engine")]
         virtual public void vShutdown()
         {
-            if (!allowShutdown) return; // If engine cannot be shutdown. Ignore the event.
-            if (!allowRestart) // Disable activate events if restarting not allowed
+            if (!allowShutdown)
+                return;
+            if (!allowRestart)
             {
                 engineShutdown = true;
-                Events["Shutdown"].active = false;
-                Events["Activate"].active = false;
+                Events["vShutdown"].active = false;
+                Events["vActivate"].active = false;
             }
             else
             {
-                Events["Shutdown"].active = false;
-                Events["Activate"].active = true;
+                Events["vShutdown"].active = false;
+                Events["vActivate"].active = true;
             }
+
+            lastPropellantFraction = 1d; // so we can relight
+
             EngineIgnited = false;
 
             PlayShutdownFX();
 
 
             Propellant p;
-            int pC = propellants.Count;
-            for (int i = 0; i < pC; ++i)
+            for (int i = propellants.Count - 1; i >= 0; --i)
             {
                 p = propellants[i];
                 if (PropellantGauges.ContainsKey(p))
-                {
                     part.stackIcon.RemoveInfo(PropellantGauges[p]);
-                }
             }
             PropellantGauges.Clear();
         }
