@@ -328,6 +328,8 @@ namespace SolverEngines
             }
             else
             {
+                if (flameout)
+                    UnFlameout();
                 // calc flow
                 double vesselValue = vessel.VesselValues.FuelUsage.value;
                 if (vesselValue == 0d)
@@ -343,7 +345,22 @@ namespace SolverEngines
                 }
                 else
                 {
-                    lastPropellantFraction = RequestPropellant(massFlow);
+                    if (massFlow > 0d)
+                    {
+                        lastPropellantFraction = RequestPropellant(massFlow);
+                    }
+                    else
+                    {
+                        lastPropellantFraction = 1d;
+                        for (int i = 0; i < propellants.Count; i++)
+                        {
+                            if (propellants[i].totalResourceAvailable <= 0d)
+                            {
+                                lastPropellantFraction = 0d;
+                                break;
+                            }
+                        }
+                    }
                 }
 
                 // set produced thrust
