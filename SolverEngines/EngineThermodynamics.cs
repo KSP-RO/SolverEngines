@@ -257,7 +257,7 @@ namespace SolverEngines
             _T += delta;
             double addedFuel = delta * Cp / heatOfFuel;
             // Order is important here - want old Far in this line not new Far
-            MassRatio += addedFuel / (1d + Far);
+            MassRatio *= (addedFuel / (1d + Far) + 1d);
             Far += addedFuel;
             Rho = P / R / T;
         }
