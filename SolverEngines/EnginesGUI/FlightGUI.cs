@@ -48,7 +48,10 @@ namespace SolverEngines.EnginesGUI
             }
 
             if (ToolbarManager.ToolbarAvailable)
+            {
                 CreateToolbarButtonBlizzy();
+                GameEvents.onGameSceneLoadRequested.Add(DestroyToolbarButtonBlizzy);
+            }
             else
                 CreateToolbarButtonStock();
 
@@ -61,9 +64,6 @@ namespace SolverEngines.EnginesGUI
             GameEvents.onShowUI.Remove(ShowUI);
             GameEvents.onHideUI.Remove(HideUI);
             SaveSettingsToConfig();
-
-            if (EnginesFlightButtonBlizzy != null)
-                EnginesFlightButtonBlizzy.Destroy();
         }
 
         #region GUI
@@ -291,6 +291,13 @@ namespace SolverEngines.EnginesGUI
                     ApplicationLauncher.AppScenes.FLIGHT,
                     (Texture)GameDatabase.Instance.GetTexture("SolverEngines/Icons/EnginesIconStock", false));
             }
+        }
+
+        private static void DestroyToolbarButtonBlizzy(GameScenes scene)
+        {
+            EnginesFlightButtonBlizzy.Destroy();
+            EnginesFlightButtonBlizzy = null;
+            GameEvents.onGameSceneLoadRequested.Remove(DestroyToolbarButtonBlizzy);
         }
 
         private void HideUI()
