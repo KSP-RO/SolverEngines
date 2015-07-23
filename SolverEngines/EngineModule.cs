@@ -391,6 +391,44 @@ namespace SolverEngines
             finalThrust = (float)producedThrust * vessel.VesselValues.EnginePower.value;
         }
 
+        // Clones of stock Flameout / Unflameout but virtual, and more args
+        new public void Flameout(string message, bool statusOnly = false)
+        {
+            vFlameout(message, statusOnly);
+        }
+        virtual public void vFlameout(string message, bool statusOnly = false, bool playFX = true)
+        {
+            Fields["statusL2"].guiActive = true;
+            statusL2 = message;
+            if (!statusOnly)
+            {
+                if (!flameout && playFX) // also check new bool
+                    PlayFlameoutFX(true);
+
+                flameout = true;
+                if (allowRestart == false)
+                    vShutdown();
+
+                status = ("Flame-Out!");
+            }
+        }
+        new public void UnFlameout()
+        {
+            vUnFlameout();
+        }
+        virtual public void vUnFlameout(bool playFX = true)
+        {
+            if (flameout && playFX) // also check new bool
+                PlayFlameoutFX(false);
+
+            flameout = false;
+
+            // set status
+            status = "Nominal";
+            Fields["statusL2"].guiActive = false;
+            ActivateRunningFX();
+        }
+
 
         new virtual public float normalizedOutput
         {
