@@ -86,6 +86,7 @@ namespace SolverEngines
                 {
                     AreaRatio = Math.Min(1d, InletArea / EngineArea);
                     OverallTPR /= InletArea;
+                    OverallTPR *= AreaRatio;
                 }
                 else
                 {
