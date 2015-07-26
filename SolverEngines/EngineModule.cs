@@ -116,7 +116,7 @@ namespace SolverEngines
                 ambientTherm = new EngineThermodynamics();
             if (inletTherm == null)
                 inletTherm = new EngineThermodynamics();
-            Need_Area = (float)engineSolver.GetArea();
+            Need_Area = RequiredIntakeArea();
             Fields["Need_Area"].guiActiveEditor = Need_Area > 0f;
 
             currentThrottle = 0f;
@@ -439,6 +439,11 @@ namespace SolverEngines
                 // or what? FIXME
                 return finalThrust / maxThrust;
             }
+        }
+
+        virtual public float RequiredIntakeArea()
+        {
+            return (float)engineSolver.GetArea();
         }
 
         #region Engine Fitting
