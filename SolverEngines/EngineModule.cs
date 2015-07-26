@@ -325,6 +325,15 @@ namespace SolverEngines
                 realIsp = 0f;
                 fuelFlowGui = 0f;
                 producedThrust = 0d;
+
+                // If engine is not ignited, then UpdatePropellantStatus() will not be called so no point in updating propellant fraction
+                if (EngineIgnited)
+                {
+                    double tempPropellantFraction = lastPropellantFraction;
+                    lastPropellantFraction = PropellantAvailable() ? 1d : 0d;
+                    if (flameout && tempPropellantFraction <= 0d && lastPropellantFraction > 0d)
+                        UnFlameout();
+                }
             }
             else
             {
@@ -351,15 +360,7 @@ namespace SolverEngines
                     }
                     else
                     {
-                        lastPropellantFraction = 1d;
-                        for (int i = 0; i < propellants.Count; i++)
-                        {
-                            if (propellants[i].totalResourceAvailable <= 0d)
-                            {
-                                lastPropellantFraction = 0d;
-                                break;
-                            }
-                        }
+                        lastPropellantFraction = PropellantAvailable() ? 1d : 0d;
                     }
                 }
 
@@ -389,6 +390,18 @@ namespace SolverEngines
             }
 
             finalThrust = (float)producedThrust * vessel.VesselValues.EnginePower.value;
+        }
+
+        virtual public bool PropellantAvailable()
+        {
+            for (int i = 0; i < propellants.Count; i++)
+            {
+                if (propellants[i].totalResourceAvailable <= 0d)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         // Clones of stock Flameout / Unflameout but virtual, and more args
