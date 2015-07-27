@@ -14,7 +14,7 @@ namespace SolverEngines
     /// Base module for AJE engines
     /// Derive from this for a real engine; this *will not work* alone.
     /// </summary>
-    public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
+    public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo, IEngineStatus
     {
         // base fields
 
@@ -443,14 +443,21 @@ namespace SolverEngines
         }
 
 
-        new virtual public float normalizedOutput
+        new public float normalizedOutput
         {
             get
             {
-                // should this just be actualThrottle ?
-                // or should we get current thrust divided max possible thrust here?
-                // or what? FIXME
-                return finalThrust / maxThrust;
+                // for now changed to throttle, but clamped...
+                return 0.25f + currentThrottle * 0.75f;
+            }
+        }
+        new public bool isOperational
+        {
+            get
+            {
+                if (engineSolver != null)
+                    return engineSolver.GetRunning();
+                return false;
             }
         }
 
