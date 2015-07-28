@@ -549,9 +549,10 @@ namespace SolverEngines
                         if (ShouldFitParameter(entry))
                             entry.SetValueFromNode(node);
                     }
-                    PushFitParamsToSolver();
                 }
 
+                // Make sure everything has the correct value
+                PushFitParamsToSolver();
                 DoEngineFit();
 
                 ConfigNode newNode = new ConfigNode();
