@@ -9,7 +9,8 @@ using KSP;
 
 namespace SolverEngines.EnginesGUI
 {
-    public class EnginesFlightGUI : VesselModule
+    [KSPAddon(KSPAddon.Startup.Flight, false)]
+    public class EnginesFlightGUI : MonoBehaviour
     {
         private Vessel vessel;
         private SolverFlightSys flightSys;
@@ -17,8 +18,8 @@ namespace SolverEngines.EnginesGUI
 
         // Toolbar stuff
 
-        private static IButton EnginesFlightButtonBlizzy = null;
-        private static ApplicationLauncherButton EnginesFlightButtonStock = null;
+        private IButton EnginesFlightButtonBlizzy = null;
+        private ApplicationLauncherButton EnginesFlightButtonStock = null;
 
         // GUI stuff
 
@@ -32,45 +33,68 @@ namespace SolverEngines.EnginesGUI
         private void Awake()
         {
             FlightDataWrapper.Init();
+
+            LoadSettingsFromConfig();
+
+            if (ToolbarManager.ToolbarAvailable)
+                CreateToolbarButtonBlizzy();
+            else
+            {
+                GameEvents.onGUIApplicationLauncherReady.Add(CreateToolbarButtonStock);
+                CreateToolbarButtonStock();
+            }
+
+            Debug.Log("Toolbar manager available: " + ToolbarManager.ToolbarAvailable.ToString());
+
         }
 
         private void Start()
         {
-            vessel = gameObject.GetComponent<Vessel>();
-            flightSys = gameObject.GetComponent<SolverFlightSys>();
-            this.enabled = true;
             FlightGUISettings.ShowSettingsWindow = false;
             GUIUnitsSettings.ShowUnitsSettingsWindow = false;
 
-            if (vessel.isActiveVessel)
-            {
-                LoadSettingsFromConfig();
-            }
-
-            if (ToolbarManager.ToolbarAvailable)
-            {
-                CreateToolbarButtonBlizzy();
-                GameEvents.onGameSceneLoadRequested.Add(DestroyToolbarButtonBlizzy);
-            }
-            else
-                CreateToolbarButtonStock();
-
             GameEvents.onShowUI.Add(ShowUI);
             GameEvents.onHideUI.Add(HideUI);
+
+            // Just to make sure
+            if (!ToolbarManager.ToolbarAvailable)
+                CreateToolbarButtonStock();
         }
 
         private void OnDestroy()
         {
+            SaveSettingsToConfig();
+
+            if (EnginesFlightButtonStock != null)
+            {
+                ApplicationLauncher.Instance.RemoveModApplication(EnginesFlightButtonStock);
+                EnginesFlightButtonStock = null;
+            }
+
+            if (EnginesFlightButtonBlizzy != null)
+            {
+                EnginesFlightButtonBlizzy.Destroy();
+                EnginesFlightButtonBlizzy = null;
+            }
+
             GameEvents.onShowUI.Remove(ShowUI);
             GameEvents.onHideUI.Remove(HideUI);
-            SaveSettingsToConfig();
         }
 
         #region GUI
 
         public void OnGUI()
         {
-            if (!vessel.isActiveVessel || !ShowFlightGUIWindow || !ShowAllUIFlight)
+            if (vessel == null || !vessel.isActiveVessel)
+            {
+                vessel = FlightGlobals.ActiveVessel;
+                if (vessel != null)
+                    flightSys = vessel.gameObject.GetComponent<SolverFlightSys>();
+                else
+                    flightSys = null;
+            }
+
+            if (vessel == null || (vessel.Parts.Count == 0) || flightSys == null || !ShowFlightGUIWindow || !ShowAllUIFlight)
                 return;
 
             if (!GUIUtil.StylesInitialized)
@@ -179,7 +203,10 @@ namespace SolverEngines.EnginesGUI
             counter *= 2;
             if (FlightGUISettings.ShowTWR)
             {
-                double TWR = totalThrust / (FlightGlobals.getGeeForceAtPosition(vessel.CoM).magnitude * vessel.GetTotalMass());
+                double TWR = 0d;
+                double weight = (FlightGlobals.getGeeForceAtPosition(vessel.CoM).magnitude * vessel.GetTotalMass());
+                if (totalThrust > 0d && weight > 0d)
+                    TWR = totalThrust / (FlightGlobals.getGeeForceAtPosition(vessel.CoM).magnitude * vessel.GetTotalMass());
 
                 GUIUtil.FlightWindowField("TWR", TWR.ToString("F2"));
                 windowDisplayField += counter;
@@ -266,7 +293,7 @@ namespace SolverEngines.EnginesGUI
 
         #region Toolbar Methods
 
-        private static void CreateToolbarButtonBlizzy()
+        private void CreateToolbarButtonBlizzy()
         {
             if (EnginesFlightButtonBlizzy == null)
             {
@@ -277,8 +304,9 @@ namespace SolverEngines.EnginesGUI
             }
         }
 
-        private static void CreateToolbarButtonStock()
+        private void CreateToolbarButtonStock()
         {
+            Debug.Log("ABCDEFG " + ApplicationLauncher.Ready.ToString());
             if (ApplicationLauncher.Ready && EnginesFlightButtonStock == null)
             {
                 EnginesFlightButtonStock = ApplicationLauncher.Instance.AddModApplication(
@@ -291,13 +319,10 @@ namespace SolverEngines.EnginesGUI
                     ApplicationLauncher.AppScenes.FLIGHT,
                     (Texture)GameDatabase.Instance.GetTexture("SolverEngines/Icons/EnginesIconStock", false));
             }
-        }
-
-        private static void DestroyToolbarButtonBlizzy(GameScenes scene)
-        {
-            EnginesFlightButtonBlizzy.Destroy();
-            EnginesFlightButtonBlizzy = null;
-            GameEvents.onGameSceneLoadRequested.Remove(DestroyToolbarButtonBlizzy);
+            else
+            {
+                Debug.Log("ABCDEFGHIJK");
+            }
         }
 
         private void HideUI()
