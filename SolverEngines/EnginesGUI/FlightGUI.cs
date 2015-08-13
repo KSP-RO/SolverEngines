@@ -39,10 +39,7 @@ namespace SolverEngines.EnginesGUI
             if (ToolbarManager.ToolbarAvailable)
                 CreateToolbarButtonBlizzy();
             else
-            {
-                GameEvents.onGUIApplicationLauncherReady.Add(CreateToolbarButtonStock);
                 CreateToolbarButtonStock();
-            }
 
             Debug.Log("Toolbar manager available: " + ToolbarManager.ToolbarAvailable.ToString());
 
@@ -306,7 +303,6 @@ namespace SolverEngines.EnginesGUI
 
         private void CreateToolbarButtonStock()
         {
-            Debug.Log("ABCDEFG " + ApplicationLauncher.Ready.ToString());
             if (ApplicationLauncher.Ready && EnginesFlightButtonStock == null)
             {
                 EnginesFlightButtonStock = ApplicationLauncher.Instance.AddModApplication(
@@ -318,10 +314,6 @@ namespace SolverEngines.EnginesGUI
                     DummyVoid,
                     ApplicationLauncher.AppScenes.FLIGHT,
                     (Texture)GameDatabase.Instance.GetTexture("SolverEngines/Icons/EnginesIconStock", false));
-            }
-            else
-            {
-                Debug.Log("ABCDEFGHIJK");
             }
         }
 
