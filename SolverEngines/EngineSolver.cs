@@ -75,8 +75,8 @@ namespace SolverEngines
             Cv_c = inletTherm.Cv;
             R_c = inletTherm.R;
 
-            eair0 = Math.Sqrt(gamma_c * R_c * t0);
-            M0 = vel / ambientTherm.SpeedOfSound(0d);
+            eair0 = ambientTherm.SpeedOfSound(0d);
+            M0 = vel / eair0;
         }
 
         /// <summary>
