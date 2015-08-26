@@ -39,6 +39,9 @@ namespace SolverEngines
         [KSPField]
         public bool noShieldedStart = false;
 
+        [KSPField]
+        public float autoignitionTemp = float.PositiveInfinity;
+
         // Testflight interaction
         public double flowMult = 1d;
         public double ispMult = 1d;
@@ -329,16 +332,15 @@ namespace SolverEngines
                 // If engine is not ignited, then UpdatePropellantStatus() will not be called so no point in updating propellant fraction
                 if (EngineIgnited)
                 {
-                    double tempPropellantFraction = lastPropellantFraction;
-                    lastPropellantFraction = PropellantAvailable() ? 1d : 0d;
-                    if (flameout && tempPropellantFraction <= 0d && lastPropellantFraction > 0d)
+                    if (flameout && lastPropellantFraction <= 0d && PropellantAvailable() && CanAutoRestart()) // CanAutoRestart() checks allowRestart
+                    {
+                        lastPropellantFraction = 1d;
                         UnFlameout();
+                    }
                 }
             }
             else
             {
-                if (flameout)
-                    UnFlameout();
                 // calc flow
                 double vesselValue = vessel.VesselValues.FuelUsage.value;
                 if (vesselValue == 0d)
@@ -474,6 +476,11 @@ namespace SolverEngines
             return (float)engineSolver.GetArea();
         }
 
+        virtual public bool CanAutoRestart()
+        {
+            return allowRestart && EngineIgnited && autoignitionTemp >= 0f && engineTemp > autoignitionTemp;
+        }
+
         #region Engine Fitting
 
         virtual public bool ShouldFitParameter(EngineParameterInfo info)
@@ -604,6 +611,7 @@ namespace SolverEngines
                 return;
             }
 
+            flameout = false;
 
             if (!EngineIgnited)
                 PlayEngageFX();
