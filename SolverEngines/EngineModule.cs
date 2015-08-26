@@ -448,7 +448,15 @@ namespace SolverEngines
             get
             {
                 // for now changed to throttle, but clamped...
-                return 0.25f + currentThrottle * 0.75f;
+                float tmpOutput = 0.25f + currentThrottle * 0.75f;
+
+                //current throttle should never allow it to go out of 0 - 1 bounds, but if it does....
+                if (tmpOutput < 0)
+                    tmpOutput = 0;
+                else if (tmpOutput > 1)
+                    tmpOutput = 1;
+
+                return tmpOutput;
             }
         }
         new public bool isOperational
