@@ -21,8 +21,8 @@ namespace SolverEngines
         [KSPField(isPersistant = false, guiActiveEditor = true, guiFormat = "F3")]
         public float Need_Area;
 
-        [KSPField(isPersistant = false, guiActive = true, guiName = "Current Throttle", guiUnits = "%")]
-        public int actualThrottle;
+        [KSPField(isPersistant = false, guiActive = true, guiName = "Current Throttle", guiFormat = "N2", guiUnits = "%")]
+        public float actualThrottle;
 
         [KSPField(isPersistant = false)]
         public double thrustUpperLimit = double.MaxValue;
@@ -289,7 +289,7 @@ namespace SolverEngines
         new virtual public void UpdateThrottle()
         {
             currentThrottle = Mathf.Max(0.00f, currentThrottle);
-            actualThrottle = Mathf.RoundToInt(currentThrottle * 100f);
+            actualThrottle = currentThrottle * 100f;
         }
 
         virtual public void UpdateFlightCondition(EngineThermodynamics ambientTherm, double altitude, Vector3d vel, double mach, bool oxygen)
