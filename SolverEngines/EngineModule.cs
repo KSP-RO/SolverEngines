@@ -241,7 +241,7 @@ namespace SolverEngines
                 }
                 EngineExhaustDamage();
 
-                double thermalFlux = tempRatio * heatProduction * vessel.VesselValues.HeatProduction.value * PhysicsGlobals.InternalHeatProductionFactor * part.thermalMass;
+                double thermalFlux = tempRatio * tempRatio * heatProduction * vessel.VesselValues.HeatProduction.value * PhysicsGlobals.InternalHeatProductionFactor * part.thermalMass;
                 part.AddThermalFlux(thermalFlux);
             }
             FXUpdate();
@@ -457,7 +457,7 @@ namespace SolverEngines
                     tmpOutput = 0;
                 else if (tmpOutput > 1)
                     tmpOutput = 1;
-
+                
                 return tmpOutput;
             }
         }
