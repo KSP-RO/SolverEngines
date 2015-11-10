@@ -11,7 +11,10 @@ namespace SolverEngines
     {
         //freestream flight conditions; static pressure, static temperature, static density, and mach number
         public double alt, p0, t0, eair0, vel, M0 = 0, rho, mach, Q;
+        public EngineThermodynamics th0 = new EngineThermodynamics();
+        public EngineThermodynamics th1 = new EngineThermodynamics();
         public bool oxygen = false;
+        public Vector3d velocity;
 
         //total conditions behind inlet
         public double P1, T1, Rho1;
@@ -29,8 +32,8 @@ namespace SolverEngines
         // current throttle state
         public double throttle;
 
-        //thrust and Isp and fuel flow of the engine
-        public double thrust, Isp, fuelFlow;
+        //thrust, Isp, SFC, and fuel flow of the engine
+        public double thrust, Isp, SFC, fuelFlow;
 
         // the string to report when can't thrust
         public string statusString = "";
@@ -47,14 +50,17 @@ namespace SolverEngines
         /// <param name="temperature">temperature in K</param>
         /// <param name="velocity">velocity in m/s</param>
         /// <param name="hasOxygen">does the atmosphere contain oxygen</param>
-        virtual public void SetFreestreamAndInlet(EngineThermodynamics ambientTherm, EngineThermodynamics inletTherm, double altitude, double inMach, double velocity, bool hasOxygen)
+        virtual public void SetFreestreamAndInlet(EngineThermodynamics ambientTherm, EngineThermodynamics inletTherm, double altitude, double inMach, Vector3 inVel, bool hasOxygen)
         {
+            th0.CopyFrom(ambientTherm);
+            th1.CopyFrom(inletTherm);
             alt = altitude;
             p0 = ambientTherm.P;
             t0 = ambientTherm.T;
             rho = ambientTherm.Rho;
             oxygen = hasOxygen;
-            vel = velocity;
+            velocity = inVel;
+            vel = velocity.magnitude;
             mach = inMach;
             Q = 0.5d * rho * vel * vel;
 
@@ -69,7 +75,7 @@ namespace SolverEngines
             Cv_c = inletTherm.Cv;
             R_c = inletTherm.R;
 
-            eair0 = Math.Sqrt(gamma_c / (R_c * t0));
+            eair0 = ambientTherm.SpeedOfSound(0d);
             M0 = vel / eair0;
         }
 
@@ -96,6 +102,7 @@ namespace SolverEngines
 
             fuelFlow = 0d;
             Isp = 0d;
+            SFC = 0d;
             thrust = 0d;
             throttle = commandedThrottle;
         }
@@ -103,6 +110,7 @@ namespace SolverEngines
         // getters for base fields
         public double GetThrust() { return thrust; }
         public double GetIsp() { return Isp; }
+        public double GetSFC() { return SFC; }
         public double GetFuelFlow() { return fuelFlow; }
         public double GetM0() { return M0; }
 
@@ -118,6 +126,23 @@ namespace SolverEngines
         virtual public float GetFXRunning() { return running && ffFraction > 0d ? (float)throttle : 0f; }
         virtual public float GetFXThrottle() { return running && ffFraction > 0d ? (float)throttle : 0f; }
         virtual public float GetFXSpool() { return running && ffFraction > 0d ? (float)throttle : 0f; }
+
+        /// <summary>
+        /// Sets the freestream properties to static conditions : sea level and not moving
+        /// </summary>
+        /// <param name="usePlanetarium">Whether to use Planetarium.fetch.Home to get static conditions or use standard Earth conditions</param>
+        /// <param name="overallTPR">Total pressure recovery of inlet</param>
+        protected void SetStaticConditions(bool usePlanetarium = true, double overallTPR = 1d)
+        {
+            EngineThermodynamics ambientTherm = new EngineThermodynamics();
+            ambientTherm.FromStandardConditions(usePlanetarium);
+
+            EngineThermodynamics inletTherm = new EngineThermodynamics();
+            inletTherm.CopyFrom(ambientTherm);
+            inletTherm.P *= overallTPR;
+
+            SetFreestreamAndInlet(ambientTherm, inletTherm, 0d, 0d, Vector3.zero, true);
+        }
 
 
         protected double CalculateGamma(double temperature, double fuel_fraction)

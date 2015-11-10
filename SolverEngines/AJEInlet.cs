@@ -59,9 +59,7 @@ namespace SolverEngines
             {
                 //by Virindi
                 float realcos = Math.Max(0f, Vector3.Dot(velocity.normalized, intakeTransform.forward));
-                float fakecos = (-0.000123f * velocity.sqrMagnitude + 0.002469f * velocity.magnitude + 0.987654f);
-                if (fakecos > 1f)
-                    fakecos = 1f;
+                float fakecos = FakeCosine(velocity.magnitude);
 
                 cosine = Math.Max(realcos, fakecos); //by Virindi
             }
@@ -141,5 +139,18 @@ namespace SolverEngines
             return output;
         }
 
+
+        public static float FakeCosine(float speed)
+        {
+            //by Virindi
+            float fakecos = (-0.000123f * speed * speed + 0.002469f * speed + 0.987654f);
+            return Mathf.Min(fakecos, 1f);
+        }
+
+        public static float OverallStaticTPR(float TPR)
+        {
+            float fakecos = FakeCosine(0f);
+            return TPR * fakecos * fakecos;
+        }
     }
 }

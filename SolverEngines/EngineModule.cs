@@ -14,15 +14,15 @@ namespace SolverEngines
     /// Base module for AJE engines
     /// Derive from this for a real engine; this *will not work* alone.
     /// </summary>
-    public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo
+    public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo, IEngineStatus
     {
         // base fields
 
-        [KSPField(isPersistant = false, guiActiveEditor = true)]
-        public double Need_Area;
+        [KSPField(isPersistant = false, guiActiveEditor = true, guiFormat = "F3")]
+        public float Need_Area;
 
-        [KSPField(isPersistant = false, guiActive = true, guiName = "Current Throttle", guiUnits = "%")]
-        public int actualThrottle;
+        [KSPField(isPersistant = false, guiActive = true, guiName = "Current Throttle", guiFormat = "N2", guiUnits = "%")]
+        public float actualThrottle;
 
         [KSPField(isPersistant = false)]
         public double thrustUpperLimit = double.MaxValue;
@@ -35,6 +35,12 @@ namespace SolverEngines
 
         [KSPField]
         public bool useExtTemp = false;
+
+        [KSPField]
+        public bool noShieldedStart = false;
+
+        [KSPField]
+        public float autoignitionTemp = float.PositiveInfinity;
 
         // Testflight interaction
         public double flowMult = 1d;
@@ -70,27 +76,58 @@ namespace SolverEngines
 
         protected const double invg0 = 1d / 9.80665d;
 
+        // Engine fitting stuff
+        protected List<EngineParameterInfo> engineFitParameters = new List<EngineParameterInfo>();
+
         #region Overridable Methods
+
+        public override void OnAwake()
+        {
+            base.OnAwake();
+
+            engineFitParameters.Clear();
+
+            FieldInfo[] fields = this.GetType().GetFields();
+            foreach (FieldInfo field in fields)
+            {
+                object[] attributes = field.GetCustomAttributes(true);
+                foreach (object attribute in attributes)
+                {
+                    if (attribute is EngineParameter)
+                        engineFitParameters.Add(new EngineParameterInfo(this, field, attribute as EngineParameter));
+                }
+            }
+
+            HideEventsActions();
+        }
 
         virtual public void CreateEngine()
         {
             engineSolver = new EngineSolver();
         }
 
+        virtual public void CreateEngineIfNecessary()
+        {
+            if (engineSolver == null)
+                CreateEngine();
+        }
+
         virtual public void Start()
         {
             CreateEngine();
-            if(ambientTherm == null)
+            if (ambientTherm == null)
                 ambientTherm = new EngineThermodynamics();
-            if(inletTherm == null)
+            if (inletTherm == null)
                 inletTherm = new EngineThermodynamics();
-            Need_Area = engineSolver.GetArea();
-            Fields["Need_Area"].guiActiveEditor = Need_Area > 0;
+            Need_Area = RequiredIntakeArea();
+            Fields["Need_Area"].guiActiveEditor = Need_Area > 0f;
 
             currentThrottle = 0f;
             flameout = false;
             SetUnflameout();
             Fields["fuelFlowGui"].guiUnits = " kg/sec";
+
+            HideEventsActions();
         }
 
         public override void OnStart(PartModule.StartState state)
@@ -113,6 +150,33 @@ namespace SolverEngines
             for (int i = 0; i < mCount; ++i)
                 if (part.Modules[i] is ModuleAnimateEmissive)
                     emissiveAnims.Add(part.Modules[i] as ModuleAnimateEmissive);
+
+            FitEngineIfNecessary();
+
+            HideEventsActions();
+            // Set up ours
+            Events["vShutdown"].active = false;
+            Events["vActivate"].active = false;
+
+            if (state != StartState.PreLaunch)
+            {
+                if (EngineIgnited)
+                {
+                    if (allowShutdown)
+                        Events["vShutdown"].active = true;
+                    else
+                        Events["vShutdown"].active = false;
+                    Events["vActivate"].active = false;
+                }
+                else
+                {
+                    Events["vShutdown"].active = false;
+                    if (!allowRestart && engineShutdown)
+                        Events["vActivate"].active = false;
+                    else
+                        Events["vActivate"].active = true;
+                }
+            }
         }
 
         public override void OnLoad(ConfigNode node)
@@ -177,7 +241,7 @@ namespace SolverEngines
                 }
                 EngineExhaustDamage();
 
-                double thermalFlux = tempRatio * heatProduction * vessel.VesselValues.HeatProduction.value * PhysicsGlobals.InternalHeatProductionFactor * part.thermalMass;
+                double thermalFlux = tempRatio * tempRatio * heatProduction * vessel.VesselValues.HeatProduction.value * PhysicsGlobals.InternalHeatProductionFactor * part.thermalMass;
                 part.AddThermalFlux(thermalFlux);
             }
             FXUpdate();
@@ -225,16 +289,16 @@ namespace SolverEngines
         new virtual public void UpdateThrottle()
         {
             currentThrottle = Mathf.Max(0.00f, currentThrottle);
-            actualThrottle = Mathf.RoundToInt(currentThrottle * 100f);
+            actualThrottle = currentThrottle * 100f;
         }
 
-        virtual public void UpdateFlightCondition(EngineThermodynamics ambientTherm, double altitude, Vector3 vel, double mach, bool oxygen)
+        virtual public void UpdateFlightCondition(EngineThermodynamics ambientTherm, double altitude, Vector3d vel, double mach, bool oxygen)
         {
             // In flight, these are the same and this will just return
             this.ambientTherm.CopyFrom(ambientTherm);
 
             engineSolver.SetEngineState(EngineIgnited, lastPropellantFraction);
-            engineSolver.SetFreestreamAndInlet(ambientTherm, inletTherm, altitude, mach, vel.magnitude, oxygen);
+            engineSolver.SetFreestreamAndInlet(ambientTherm, inletTherm, altitude, mach, vel, oxygen);
             engineSolver.CalculatePerformance(areaRatio, currentThrottle, flowMult, ispMult);
         }
 
@@ -264,6 +328,16 @@ namespace SolverEngines
                 realIsp = 0f;
                 fuelFlowGui = 0f;
                 producedThrust = 0d;
+
+                // If engine is not ignited, then UpdatePropellantStatus() will not be called so no point in updating propellant fraction
+                if (EngineIgnited)
+                {
+                    if (flameout && lastPropellantFraction <= 0d && PropellantAvailable() && CanAutoRestart()) // CanAutoRestart() checks allowRestart
+                    {
+                        lastPropellantFraction = 1d;
+                        UnFlameout();
+                    }
+                }
             }
             else
             {
@@ -282,7 +356,14 @@ namespace SolverEngines
                 }
                 else
                 {
-                    lastPropellantFraction = RequestPropellant(massFlow);
+                    if (massFlow > 0d)
+                    {
+                        lastPropellantFraction = RequestPropellant(massFlow);
+                    }
+                    else
+                    {
+                        lastPropellantFraction = PropellantAvailable() ? 1d : 0d;
+                    }
                 }
 
                 // set produced thrust
@@ -313,17 +394,322 @@ namespace SolverEngines
             finalThrust = (float)producedThrust * vessel.VesselValues.EnginePower.value;
         }
 
+        virtual public bool PropellantAvailable()
+        {
+            for (int i = 0; i < propellants.Count; i++)
+            {
+                if (propellants[i].totalResourceAvailable <= 0d)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
 
-        new virtual public float normalizedOutput
+        // Clones of stock Flameout / Unflameout but virtual, and more args
+        new public void Flameout(string message, bool statusOnly = false)
+        {
+            vFlameout(message, statusOnly);
+        }
+        virtual public void vFlameout(string message, bool statusOnly = false, bool playFX = true)
+        {
+            Fields["statusL2"].guiActive = true;
+            statusL2 = message;
+            if (!statusOnly)
+            {
+                if (!flameout && playFX) // also check new bool
+                    PlayFlameoutFX(true);
+
+                flameout = true;
+                if (allowRestart == false)
+                    vShutdown();
+
+                status = ("Flame-Out!");
+            }
+        }
+        new public void UnFlameout()
+        {
+            vUnFlameout();
+        }
+        virtual public void vUnFlameout(bool playFX = true)
+        {
+            if (flameout && playFX) // also check new bool
+                PlayFlameoutFX(false);
+
+            flameout = false;
+
+            // set status
+            status = "Nominal";
+            Fields["statusL2"].guiActive = false;
+            ActivateRunningFX();
+        }
+
+
+        new public float normalizedOutput
         {
             get
             {
-                // should this just be actualThrottle ?
-                // or should we get current thrust divided max possible thrust here?
-                // or what? FIXME
-                return finalThrust / maxThrust;
+                // for now changed to throttle, but clamped...
+                float tmpOutput = 0.25f + currentThrottle * 0.75f;
+
+                //current throttle should never allow it to go out of 0 - 1 bounds, but if it does....
+                if (tmpOutput < 0)
+                    tmpOutput = 0;
+                else if (tmpOutput > 1)
+                    tmpOutput = 1;
+                
+                return tmpOutput;
             }
         }
+        new public bool isOperational
+        {
+            get
+            {
+                if (engineSolver != null)
+                    return engineSolver.GetRunning();
+                return false;
+            }
+        }
+
+        virtual public float RequiredIntakeArea()
+        {
+            return (float)engineSolver.GetArea();
+        }
+
+        virtual public bool CanAutoRestart()
+        {
+            return allowRestart && EngineIgnited && autoignitionTemp >= 0f && engineTemp > autoignitionTemp;
+        }
+
+        #region Engine Fitting
+
+        virtual public bool ShouldFitParameter(EngineParameterInfo info)
+        {
+            if (info.Param is EngineFitResult)
+                return true;
+            else
+                return false;
+        }
+
+        virtual public void FitEngineIfNecessary()
+        {
+            bool doFit = false;
+
+            foreach (EngineParameterInfo entry in engineFitParameters)
+            {
+                if (ShouldFitParameter(entry))
+                {
+                    doFit = true;
+                    break;
+                }
+
+            }
+
+            // No parameters can be fit
+            if (!doFit)
+                return;
+
+            doFit = false;
+
+            ConfigNode node = EngineDatabase.GetNodeForEngine(this);
+            if (node != null)
+            {
+                doFit |= EngineDatabase.PluginUpdateCheck(this, node);
+
+                // Check for changes
+                foreach (EngineParameterInfo entry in engineFitParameters)
+                {
+                    // Don't check things we're going to fit
+                    if (ShouldFitParameter(entry))
+                        continue;
+
+                    if (!entry.EqualsValueInNode(node))
+                    {
+                        doFit = true;
+                        break;
+                    }
+                }
+                if (!doFit && node != null)
+                {
+                    Debug.Log("[" + this.GetType().Name + "] Reading engine params from cache for engine " + part.name);
+
+                    CreateEngineIfNecessary();
+
+                    foreach (EngineParameterInfo entry in engineFitParameters)
+                    {
+                        // Only copy things that would be fitted
+                        if (ShouldFitParameter(entry))
+                            entry.SetValueFromNode(node);
+                    }
+                    PushFitParamsToSolver();
+                }
+            }
+            else
+            {
+                doFit = true;
+            }
+
+            if (doFit)
+            {
+                Debug.Log("[" + this.GetType().Name + "] Fitting params for engine " + part.name);
+
+                CreateEngineIfNecessary();
+
+                // Copy valid fit results from database - they might still be correct
+                if (node != null)
+                {
+                    foreach (EngineParameterInfo entry in engineFitParameters)
+                    {
+                        // Only copy things that would be fitted
+                        if (ShouldFitParameter(entry))
+                            entry.SetValueFromNode(node);
+                    }
+                }
+
+                // Make sure everything has the correct value
+                PushFitParamsToSolver();
+                DoEngineFit();
+
+                ConfigNode newNode = new ConfigNode();
+
+                foreach (EngineParameterInfo entry in engineFitParameters)
+                {
+                    newNode.SetValue(entry.Name, entry.GetValueStr(), true);
+                }
+
+                EngineDatabase.SetNodeForEngine(this, newNode);
+            }
+        }
+
+        virtual public void DoEngineFit()
+        {
+            throw new NotImplementedException();
+        }
+
+        virtual public void PushFitParamsToSolver()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region Events and Actions
+        new public void Activate()
+        {
+            vActivate();
+        }
+        [KSPEvent(guiActive = true, guiName = "Activate Engine")]
+        virtual public void vActivate()
+        {
+            if (!allowRestart && engineShutdown)
+            {
+                return;
+            }
+            if (noShieldedStart && part.ShieldedFromAirstream)
+            {
+                ScreenMessages.PostScreenMessage("<color=orange>[" + part.partInfo.title + "]: Cannot activate while stowed!</color>", 6f, ScreenMessageStyle.UPPER_LEFT);
+                return;
+            }
+
+            flameout = false;
+
+            if (!EngineIgnited)
+                PlayEngageFX();
+
+            EngineIgnited = true;
+            if (allowShutdown)
+                Events["vShutdown"].active = true;
+            else
+                Events["vShutdown"].active = false;
+
+            Events["vActivate"].active = false;
+        }
+
+        new public void Shutdown()
+        {
+            vShutdown();
+        }
+        [KSPEvent(guiActive = true, guiName = "Shutdown Engine")]
+        virtual public void vShutdown()
+        {
+            if (!allowShutdown)
+                return;
+            if (!allowRestart)
+            {
+                engineShutdown = true;
+                Events["vShutdown"].active = false;
+                Events["vActivate"].active = false;
+            }
+            else
+            {
+                Events["vShutdown"].active = false;
+                Events["vActivate"].active = true;
+            }
+
+            lastPropellantFraction = 1d; // so we can relight
+
+            EngineIgnited = false;
+
+            PlayShutdownFX();
+
+
+            Propellant p;
+            for (int i = propellants.Count - 1; i >= 0; --i)
+            {
+                p = propellants[i];
+                if (PropellantGauges.ContainsKey(p))
+                    part.stackIcon.RemoveInfo(PropellantGauges[p]);
+            }
+            PropellantGauges.Clear();
+        }
+
+        new public void OnAction(KSPActionParam param)
+        {
+            vOnAction(param);
+        }
+        [KSPAction("Toggle Engine")]
+        virtual public void vOnAction(KSPActionParam param)
+        {
+            if (!EngineIgnited)
+                vActivate();
+            else
+                vShutdown();
+        }
+
+        new public void ShutdownAction(KSPActionParam param)
+        {
+            vShutdownAction(param);
+        }
+        [KSPAction("Shutdown Engine")]
+        virtual public void vShutdownAction(KSPActionParam param)
+        {
+            vShutdown();
+        }
+
+        new public void ActivateAction(KSPActionParam param)
+        {
+            vActivateAction(param);
+        }
+        [KSPAction("Activate Engine")]
+        virtual public void vActivateAction(KSPActionParam param)
+        {
+            vActivate();
+        }
+        // from base, but here so we use our (overridable) methods.
+        public override void OnActive()
+        {
+            if (!EngineIgnited && !manuallyOverridden)
+            {
+                if (!staged)
+                {
+                    vActivate();
+                    staged = EngineIgnited;
+                }
+            }
+        }
+        #endregion
+
+        #region Info
         new virtual public string GetModuleTitle()
         {
             return "EngineSolver Engine";
@@ -337,8 +723,10 @@ namespace SolverEngines
         {
             return "<b>Unconfigured</b>";
         }
-
         #endregion
+        #endregion
+
+
 
         #region Base Methods
         protected void SetFlameout()
@@ -386,6 +774,14 @@ namespace SolverEngines
                     overheatBox = null;
                 }
             }
+        }
+
+        protected void HideEventsActions()
+        {
+            // Hide old events/actions
+            Events["Activate"].active = Events["Activate"].guiActive = Events["Activate"].guiActiveEditor = Events["Activate"].guiActiveUnfocused = false;
+            Events["Shutdown"].active = Events["Shutdown"].guiActive = Events["Shutdown"].guiActiveEditor = Events["Shutdown"].guiActiveUnfocused = false;
+            Actions["OnAction"].active = Actions["ShutdownAction"].active = Actions["ActivateAction"].active = false;
         }
 
         protected static string FormatTime(double time)

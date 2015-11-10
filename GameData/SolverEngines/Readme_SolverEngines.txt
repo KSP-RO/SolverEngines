@@ -27,6 +27,53 @@ SolverEngines includes a GUI to display useful information about engines in flig
 See AJE or RealFuels for examples of how to implement SolverEngines in practice.
 
 Changelog:
+v1.11
+* Make heat production quadratic with throttle rather than linear.
+
+v1.10
+* Fix some NREs.
+* Fix flickering of FX on burnout.
+* Fix error in speed of sound formula; this fixes AJE propellers (with AJE 2.4+)
+* Add hook for temperature-based autorestart.
+* Make displayed actual throttle display two decimal points.
+
+v1.9
+* Prevent flight GUI button from disappearing.
+* Fix flameouts at 0 mass requested.
+* Fix a math bug.
+* Add virtuals vFlameout and vUnflameout if a mod wants to override them.
+* Allow required intake area to be adjusted.
+* Cut TPR if insufficient intake area.
+* Auto-unflameout thanks to nimaroth
+* Fix issue with alternators.
+* Fix an issue with engine fitting.
+
+v1.8
+* Fix for GUI issues in 1.7.
+* To avoid the "can't restart engine once propellant is provided again" issue, shutdown and then activate your engine. That will clear its memory of flameouts.
+
+v1.7
+* Remove duplicate GUI entries.
+* Avoid some NREs.
+
+v1.6
+* Finally fix the "can't start when shielded" thing. Activate/toggle was fixed but staging wasn't.
+* Improve fitting code.
+* Fix version file
+
+v1.5
+* EngineThermodynamics improvements (docs, track mass flow, allow mixing streams).
+* Add functionality to fit an engine's performance parameters to a set of database parameters.
+* Add SFC as a base solver member (in force/weight-hr).
+
+v1.4
+* Make the "can't start engine in fairing/bay" functionality toggleable ( noShieldedStart in the MODULE), and default to off.
+* Speed things up a little in the GUI/VesselModule
+* Changed GUI namespace to avoid an issue with Toolbar.
+
+v1.3
+* Pass velocity as a Vector3d (vel in the solver is still a double).
+
 v1.2
 * Made base members of the solver public for accessibility.
 * Added Q (dynamic pressure) as one of the base members.

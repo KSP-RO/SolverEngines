@@ -13,9 +13,9 @@ namespace SolverEngines
     {
         private Vessel vessel;
 
-        public float InletArea { get; private set; }
-        public float EngineArea { get; private set; }
-        public float AreaRatio { get; private set; }
+        public double InletArea { get; private set; }
+        public double EngineArea { get; private set; }
+        public double AreaRatio { get; private set; }
         public double OverallTPR { get; private set; }
         public List<ModuleEngines> EngineList { get { return allEngines; } }
         
@@ -48,48 +48,49 @@ namespace SolverEngines
                 return;
             if (vessel.altitude > vessel.mainBody.atmosphereDepth)
                 return;
-
-            if (partsCount != vessel.Parts.Count)
+            int newCount = vessel.Parts.Count;
+            if (partsCount != newCount)
             {
+                partsCount = newCount;
                 updatePartsList();
-                partsCount = vessel.Parts.Count;
             }
             
 
-            InletArea = 0f;
-            EngineArea = 0f;
-            OverallTPR = 0f;
-            AreaRatio = 0f;
+            InletArea = 0d;
+            EngineArea = 0d;
+            OverallTPR = 0d;
+            AreaRatio = 0d;
 
-            for (int j = 0; j < engineList.Count; j++)
+            for (int j = engineList.Count - 1; j >= 0; --j)
             {
                 ModuleEnginesSolver e = engineList[j];
-                if (e && e.EngineIgnited)
+                if ((object)e != null && e.EngineIgnited)
                 {
                     EngineArea += (float)e.Need_Area;
                 }
             }
 
-            for (int j = 0; j < inletList.Count; j++)
+            for (int j = inletList.Count -1; j >= 0; --j)
             {
                 AJEInlet i = inletList[j];
-                if (i && i.intakeEnabled)
+                if ((object)i != null && i.intakeEnabled)
                 {
-                    InletArea += i.Area;
-                    OverallTPR += i.Area * i.overallTPR;
+                    InletArea += (double)i.Area;
+                    OverallTPR += (double)i.Area * (double)i.overallTPR;
                 }
             }
 
-            if (InletArea > 0f)
+            if (InletArea > 0d)
             {
-                if (EngineArea > 0f)
+                if (EngineArea > 0d)
                 {
-                    AreaRatio = InletArea / EngineArea;
+                    AreaRatio = Math.Min(1d, InletArea / EngineArea);
                     OverallTPR /= InletArea;
+                    OverallTPR *= AreaRatio;
                 }
                 else
                 {
-                    AreaRatio = 1f;
+                    AreaRatio = 1d;
                 }
             }
 
@@ -105,9 +106,9 @@ namespace SolverEngines
 
             // Push parameters to each engine
 
-            for (int i = 0; i < engineList.Count; i++)
+            for (int i = engineList.Count - 1; i >= 0 ; --i)
             {
-                engineList[i].UpdateInletEffects(InletTherm, Math.Min(AreaRatio, 1f), OverallTPR);
+                engineList[i].UpdateInletEffects(InletTherm, AreaRatio, OverallTPR);
             }
         }
 
@@ -116,10 +117,10 @@ namespace SolverEngines
             engineList.Clear();
             inletList.Clear();
             allEngines.Clear();
-            for (int i = 0; i < vessel.parts.Count; i++)
+            for (int i = partsCount - 1; i >= 0; --i)
             {
                 Part p = vessel.parts[i];
-                for (int j = 0; j < p.Modules.Count; j++)
+                for (int j = p.Modules.Count - 1; j >= 0; --j)
                 {
                     PartModule m = p.Modules[j];
                     if (m is ModuleEngines)
