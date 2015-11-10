@@ -286,7 +286,7 @@ namespace SolverEngines
 
         }
 
-        new virtual public void UpdateThrottle()
+        public override void UpdateThrottle()
         {
             currentThrottle = Mathf.Max(0.00f, currentThrottle);
             actualThrottle = currentThrottle * 100f;
