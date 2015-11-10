@@ -26,9 +26,7 @@ namespace SolverEngines
         public float overallTPR = 1f;
 
         // replace some original things
-        protected Transform intakeTransform = null;
         new public float airFlow = 0f;
-        new public float intakeDrag;
         new public float airSpeedGui;
 
         public float GetTPR(double Mach)

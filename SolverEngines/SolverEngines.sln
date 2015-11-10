@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 2012 for Windows Desktop
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolverEngines", "SolverEngines.csproj", "{E37D5FA8-8E63-4D4A-A677-2313A9CE70CA}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModuleAnimateEmissive", "ModuleAnimateEmissive\ModuleAnimateEmissive.csproj", "{C627FE3A-3B22-49B7-9C40-540CD00011B5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,10 +15,6 @@ Global
 		{E37D5FA8-8E63-4D4A-A677-2313A9CE70CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E37D5FA8-8E63-4D4A-A677-2313A9CE70CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E37D5FA8-8E63-4D4A-A677-2313A9CE70CA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C627FE3A-3B22-49B7-9C40-540CD00011B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C627FE3A-3B22-49B7-9C40-540CD00011B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C627FE3A-3B22-49B7-9C40-540CD00011B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C627FE3A-3B22-49B7-9C40-540CD00011B5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -59,12 +59,6 @@
       <Private>False</Private>
     </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="ModuleAnimateEmissive\ModuleAnimateEmissive.csproj">
-      <Project>{c627fe3a-3b22-49b7-9c40-540cd00011b5}</Project>
-      <Name>ModuleAnimateEmissive</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

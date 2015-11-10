@@ -60,7 +60,7 @@ namespace SolverEngines
         protected double lastPropellantFraction = 1d;
         protected VInfoBox overheatBox = null;
 
-        protected List<ModuleAnimateEmissive> emissiveAnims;
+        protected List<ModuleAnimateHeat> emissiveAnims;
 
 
         // protected internals
@@ -145,11 +145,11 @@ namespace SolverEngines
                 inletTherm = new EngineThermodynamics();
 
             // Get emissives
-            emissiveAnims = new List<ModuleAnimateEmissive>();
+            emissiveAnims = new List<ModuleAnimateHeat>();
             int mCount = part.Modules.Count;
             for (int i = 0; i < mCount; ++i)
-                if (part.Modules[i] is ModuleAnimateEmissive)
-                    emissiveAnims.Add(part.Modules[i] as ModuleAnimateEmissive);
+                if (part.Modules[i] is ModuleAnimateHeat)
+                    emissiveAnims.Add(part.Modules[i] as ModuleAnimateHeat);
 
             FitEngineIfNecessary();
 
@@ -407,7 +407,7 @@ namespace SolverEngines
         }
 
         // Clones of stock Flameout / Unflameout but virtual, and more args
-        new public void Flameout(string message, bool statusOnly = false)
+        public override void Flameout(string message, bool statusOnly = false)
         {
             vFlameout(message, statusOnly);
         }
@@ -422,12 +422,12 @@ namespace SolverEngines
 
                 flameout = true;
                 if (allowRestart == false)
-                    vShutdown();
+                    Shutdown();
 
                 status = ("Flame-Out!");
             }
         }
-        new public void UnFlameout()
+        public override void UnFlameout()
         {
             vUnFlameout();
         }
@@ -594,12 +594,7 @@ namespace SolverEngines
         #endregion
 
         #region Events and Actions
-        new public void Activate()
-        {
-            vActivate();
-        }
-        [KSPEvent(guiActive = true, guiName = "Activate Engine")]
-        virtual public void vActivate()
+        public override void Activate()
         {
             if (!allowRestart && engineShutdown)
             {
@@ -624,13 +619,8 @@ namespace SolverEngines
 
             Events["vActivate"].active = false;
         }
-
-        new public void Shutdown()
-        {
-            vShutdown();
-        }
-        [KSPEvent(guiActive = true, guiName = "Shutdown Engine")]
-        virtual public void vShutdown()
+        
+        public override void Shutdown()
         {
             if (!allowShutdown)
                 return;
@@ -662,51 +652,7 @@ namespace SolverEngines
             }
             PropellantGauges.Clear();
         }
-
-        new public void OnAction(KSPActionParam param)
-        {
-            vOnAction(param);
-        }
-        [KSPAction("Toggle Engine")]
-        virtual public void vOnAction(KSPActionParam param)
-        {
-            if (!EngineIgnited)
-                vActivate();
-            else
-                vShutdown();
-        }
-
-        new public void ShutdownAction(KSPActionParam param)
-        {
-            vShutdownAction(param);
-        }
-        [KSPAction("Shutdown Engine")]
-        virtual public void vShutdownAction(KSPActionParam param)
-        {
-            vShutdown();
-        }
-
-        new public void ActivateAction(KSPActionParam param)
-        {
-            vActivateAction(param);
-        }
-        [KSPAction("Activate Engine")]
-        virtual public void vActivateAction(KSPActionParam param)
-        {
-            vActivate();
-        }
-        // from base, but here so we use our (overridable) methods.
-        public override void OnActive()
-        {
-            if (!EngineIgnited && !manuallyOverridden)
-            {
-                if (!staged)
-                {
-                    vActivate();
-                    staged = EngineIgnited;
-                }
-            }
-        }
+        
         #endregion
 
         #region Info
