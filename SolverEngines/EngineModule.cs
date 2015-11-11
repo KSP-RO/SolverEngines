@@ -405,13 +405,8 @@ namespace SolverEngines
             }
             return true;
         }
-
-        // Clones of stock Flameout / Unflameout but virtual, and more args
-        public override void Flameout(string message, bool statusOnly = false)
-        {
-            vFlameout(message, statusOnly);
-        }
-        virtual public void vFlameout(string message, bool statusOnly = false, bool playFX = true)
+        
+        public override void Flameout(string message, bool statusOnly = false, bool playFX = true)
         {
             Fields["statusL2"].guiActive = true;
             statusL2 = message;
@@ -427,11 +422,7 @@ namespace SolverEngines
                 status = ("Flame-Out!");
             }
         }
-        public override void UnFlameout()
-        {
-            vUnFlameout();
-        }
-        virtual public void vUnFlameout(bool playFX = true)
+        public override void UnFlameout(bool playFX = true)
         {
             if (flameout && playFX) // also check new bool
                 PlayFlameoutFX(false);
