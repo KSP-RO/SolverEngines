@@ -37,9 +37,6 @@ namespace SolverEngines
         public bool useExtTemp = false;
 
         [KSPField]
-        public bool noShieldedStart = false;
-
-        [KSPField]
         public float autoignitionTemp = float.PositiveInfinity;
 
         // Testflight interaction
@@ -97,8 +94,6 @@ namespace SolverEngines
                         engineFitParameters.Add(new EngineParameterInfo(this, field, attribute as EngineParameter));
                 }
             }
-
-            HideEventsActions();
         }
 
         virtual public void CreateEngine()
@@ -126,8 +121,6 @@ namespace SolverEngines
             flameout = false;
             SetUnflameout();
             Fields["fuelFlowGui"].guiUnits = " kg/sec";
-
-            HideEventsActions();
         }
 
         public override void OnStart(PartModule.StartState state)
@@ -152,31 +145,6 @@ namespace SolverEngines
                     emissiveAnims.Add(part.Modules[i] as ModuleAnimateHeat);
 
             FitEngineIfNecessary();
-
-            HideEventsActions();
-            // Set up ours
-            Events["vShutdown"].active = false;
-            Events["vActivate"].active = false;
-
-            if (state != StartState.PreLaunch)
-            {
-                if (EngineIgnited)
-                {
-                    if (allowShutdown)
-                        Events["vShutdown"].active = true;
-                    else
-                        Events["vShutdown"].active = false;
-                    Events["vActivate"].active = false;
-                }
-                else
-                {
-                    Events["vShutdown"].active = false;
-                    if (!allowRestart && engineShutdown)
-                        Events["vActivate"].active = false;
-                    else
-                        Events["vActivate"].active = true;
-                }
-            }
         }
 
         public override void OnLoad(ConfigNode node)
@@ -405,36 +373,6 @@ namespace SolverEngines
             }
             return true;
         }
-        
-        public override void Flameout(string message, bool statusOnly = false, bool playFX = true)
-        {
-            Fields["statusL2"].guiActive = true;
-            statusL2 = message;
-            if (!statusOnly)
-            {
-                if (!flameout && playFX) // also check new bool
-                    PlayFlameoutFX(true);
-
-                flameout = true;
-                if (allowRestart == false)
-                    Shutdown();
-
-                status = ("Flame-Out!");
-            }
-        }
-        public override void UnFlameout(bool playFX = true)
-        {
-            if (flameout && playFX) // also check new bool
-                PlayFlameoutFX(false);
-
-            flameout = false;
-
-            // set status
-            status = "Nominal";
-            Fields["statusL2"].guiActive = false;
-            ActivateRunningFX();
-        }
-
 
         new public float normalizedOutput
         {
@@ -587,61 +525,10 @@ namespace SolverEngines
         #region Events and Actions
         public override void Activate()
         {
-            if (!allowRestart && engineShutdown)
-            {
-                return;
-            }
-            if (noShieldedStart && part.ShieldedFromAirstream)
-            {
-                ScreenMessages.PostScreenMessage("<color=orange>[" + part.partInfo.title + "]: Cannot activate while stowed!</color>", 6f, ScreenMessageStyle.UPPER_LEFT);
-                return;
-            }
+            base.Activate();
 
+            lastPropellantFraction = 1d;
             flameout = false;
-
-            if (!EngineIgnited)
-                PlayEngageFX();
-
-            EngineIgnited = true;
-            if (allowShutdown)
-                Events["vShutdown"].active = true;
-            else
-                Events["vShutdown"].active = false;
-
-            Events["vActivate"].active = false;
-        }
-        
-        public override void Shutdown()
-        {
-            if (!allowShutdown)
-                return;
-            if (!allowRestart)
-            {
-                engineShutdown = true;
-                Events["vShutdown"].active = false;
-                Events["vActivate"].active = false;
-            }
-            else
-            {
-                Events["vShutdown"].active = false;
-                Events["vActivate"].active = true;
-            }
-
-            lastPropellantFraction = 1d; // so we can relight
-
-            EngineIgnited = false;
-
-            PlayShutdownFX();
-
-
-            Propellant p;
-            for (int i = propellants.Count - 1; i >= 0; --i)
-            {
-                p = propellants[i];
-                if (PropellantGauges.ContainsKey(p))
-                    part.stackIcon.RemoveInfo(PropellantGauges[p]);
-            }
-            PropellantGauges.Clear();
         }
         
         #endregion
@@ -711,14 +598,6 @@ namespace SolverEngines
                     overheatBox = null;
                 }
             }
-        }
-
-        protected void HideEventsActions()
-        {
-            // Hide old events/actions
-            Events["Activate"].active = Events["Activate"].guiActive = Events["Activate"].guiActiveEditor = Events["Activate"].guiActiveUnfocused = false;
-            Events["Shutdown"].active = Events["Shutdown"].guiActive = Events["Shutdown"].guiActiveEditor = Events["Shutdown"].guiActiveUnfocused = false;
-            Actions["OnAction"].active = Actions["ShutdownAction"].active = Actions["ActivateAction"].active = false;
         }
 
         protected static string FormatTime(double time)
