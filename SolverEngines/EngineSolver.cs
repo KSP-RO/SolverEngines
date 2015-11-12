@@ -7,7 +7,7 @@ using KSP;
 
 namespace SolverEngines
 {
-    public class EngineSolver
+    public abstract class EngineSolver
     {
         //freestream flight conditions; static pressure, static temperature, static density, and mach number
         public double alt, p0, t0, eair0, vel, M0 = 0, rho, mach, Q;

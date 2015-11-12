@@ -14,7 +14,7 @@ namespace SolverEngines
     /// Base module for AJE engines
     /// Derive from this for a real engine; this *will not work* alone.
     /// </summary>
-    public class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo, IEngineStatus
+    public abstract class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo, IEngineStatus
     {
         // base fields
 
@@ -103,7 +103,7 @@ namespace SolverEngines
 
         virtual public void CreateEngine()
         {
-            engineSolver = new EngineSolver();
+            throw new NotImplementedException("Must be implemented to create the correct engine solver");
         }
 
         virtual public void CreateEngineIfNecessary()
