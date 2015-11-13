@@ -526,9 +526,13 @@ namespace SolverEngines
         public override void Activate()
         {
             base.Activate();
-
-            lastPropellantFraction = 1d;
+            
             flameout = false;
+
+            if (PropellantAvailable())
+                lastPropellantFraction = 1d;
+            else
+                lastPropellantFraction = 0d;
         }
         
         #endregion
