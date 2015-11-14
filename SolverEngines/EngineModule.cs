@@ -413,7 +413,7 @@ namespace SolverEngines
 
         new protected bool CheckTransformsUnderwater()
         {
-            if (!vessel.mainBody.ocean)
+            if (!vessel || !vessel.mainBody.ocean)
                 return false;
 
             for (int i = 0; i < thrustTransforms.Count; i++)
