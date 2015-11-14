@@ -66,17 +66,18 @@ namespace SolverEngines
                 ModuleEnginesSolver e = engineList[j];
                 if ((object)e != null && e.EngineIgnited)
                 {
-                    EngineArea += (float)e.Need_Area;
+                    EngineArea += e.Need_Area;
                 }
             }
 
             for (int j = inletList.Count -1; j >= 0; --j)
             {
                 AJEInlet i = inletList[j];
-                if ((object)i != null && i.intakeEnabled)
+                if ((object)i != null)
                 {
-                    InletArea += (double)i.Area;
-                    OverallTPR += (double)i.Area * (double)i.overallTPR;
+                    double area = i.UsableArea();
+                    InletArea += area;
+                    OverallTPR += area * i.overallTPR;
                 }
             }
 

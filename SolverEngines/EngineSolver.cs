@@ -14,6 +14,7 @@ namespace SolverEngines
         public EngineThermodynamics th0 = new EngineThermodynamics();
         public EngineThermodynamics th1 = new EngineThermodynamics();
         public bool oxygen = false;
+        public bool underwater = false;
         public Vector3d velocity;
 
         //total conditions behind inlet
@@ -50,7 +51,8 @@ namespace SolverEngines
         /// <param name="temperature">temperature in K</param>
         /// <param name="velocity">velocity in m/s</param>
         /// <param name="hasOxygen">does the atmosphere contain oxygen</param>
-        virtual public void SetFreestreamAndInlet(EngineThermodynamics ambientTherm, EngineThermodynamics inletTherm, double altitude, double inMach, Vector3 inVel, bool hasOxygen)
+        /// <param name="isUnderwater">Is the engine's thrust transform underwater</param>
+        virtual public void SetFreestreamAndInlet(EngineThermodynamics ambientTherm, EngineThermodynamics inletTherm, double altitude, double inMach, Vector3 inVel, bool hasOxygen, bool isUnderwater)
         {
             th0.CopyFrom(ambientTherm);
             th1.CopyFrom(inletTherm);
@@ -59,6 +61,7 @@ namespace SolverEngines
             t0 = ambientTherm.T;
             rho = ambientTherm.Rho;
             oxygen = hasOxygen;
+            underwater = isUnderwater;
             velocity = inVel;
             vel = velocity.magnitude;
             mach = inMach;
@@ -141,7 +144,7 @@ namespace SolverEngines
             inletTherm.CopyFrom(ambientTherm);
             inletTherm.P *= overallTPR;
 
-            SetFreestreamAndInlet(ambientTherm, inletTherm, 0d, 0d, Vector3.zero, true);
+            SetFreestreamAndInlet(ambientTherm, inletTherm, 0d, 0d, Vector3.zero, true, false);
         }
 
 

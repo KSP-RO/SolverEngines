@@ -29,7 +29,7 @@ namespace SolverEngines
         new public float airFlow = 0f;
         new public float airSpeedGui;
 
-        public float GetTPR(double Mach)
+        virtual public float GetTPR(double Mach)
         {
             if (useTPRCurve)
             {
@@ -45,7 +45,7 @@ namespace SolverEngines
 
         }
 
-        public void UpdateOverallTPR(Vector3 velocity, double mach)
+        virtual public void UpdateOverallTPR(Vector3 velocity, double mach)
         {
             // blowfish - avoid TPR variations at standstill
             if (velocity.IsSmallerThan(0.05f))
@@ -79,12 +79,12 @@ namespace SolverEngines
             base.FixedUpdate();
             if (HighLogic.LoadedSceneIsEditor)
                 return;
-            if (vessel.mainBody.atmosphereContainsOxygen == false || part.vessel.altitude > vessel.mainBody.atmosphereDepth)
+            if (part.vessel.altitude > vessel.mainBody.atmosphereDepth)
             {
                 return;
             }
 
-            if (intakeEnabled)
+            if (IntakeActive())
             {
                 UpdateOverallTPR(vessel.srf_velocity, vessel.mach);
             }
@@ -93,6 +93,29 @@ namespace SolverEngines
                 cosine = 1f;
                 overallTPR = 0f;
             }
+        }
+
+        virtual public bool IntakeActive()
+        {
+            return intakeEnabled && InAtmosphere() && !part.ShieldedFromAirstream && !(CheckUnderwater() && disableUnderwater);
+        }
+
+        virtual public float UsableArea()
+        {
+            if (IntakeActive())
+                return Area;
+            else
+                return 0f;
+        }
+
+        protected bool InAtmosphere()
+        {
+            return part.vessel.altitude < vessel.mainBody.atmosphereDepth;
+        }
+
+        protected bool CheckUnderwater()
+        {
+            return FlightGlobals.getAltitudeAtPos(intakeTransform.position) < 0.0f && vessel.mainBody.ocean;
         }
 
         public Callback<Rect> GetDrawModulePanelCallback()

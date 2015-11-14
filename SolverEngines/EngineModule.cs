@@ -188,7 +188,8 @@ namespace SolverEngines
                 vessel.altitude,
                 vessel.srf_velocity,
                 vessel.mach,
-                vessel.mainBody.atmosphereContainsOxygen);
+                vessel.mainBody.atmosphereContainsOxygen,
+                CheckTransformsUnderwater());
             CalculateEngineParams();
             UpdateTemp();
 
@@ -260,13 +261,13 @@ namespace SolverEngines
             actualThrottle = currentThrottle * 100f;
         }
 
-        virtual public void UpdateFlightCondition(EngineThermodynamics ambientTherm, double altitude, Vector3d vel, double mach, bool oxygen)
+        virtual public void UpdateFlightCondition(EngineThermodynamics ambientTherm, double altitude, Vector3d vel, double mach, bool oxygen, bool underwater)
         {
             // In flight, these are the same and this will just return
             this.ambientTherm.CopyFrom(ambientTherm);
 
             engineSolver.SetEngineState(EngineIgnited, lastPropellantFraction);
-            engineSolver.SetFreestreamAndInlet(ambientTherm, inletTherm, altitude, mach, vel, oxygen);
+            engineSolver.SetFreestreamAndInlet(ambientTherm, inletTherm, altitude, mach, vel, oxygen, underwater);
             engineSolver.CalculatePerformance(areaRatio, currentThrottle, flowMult, ispMult);
         }
 
@@ -410,6 +411,19 @@ namespace SolverEngines
             return allowRestart && EngineIgnited && autoignitionTemp >= 0f && engineTemp > autoignitionTemp;
         }
 
+        new protected bool CheckTransformsUnderwater()
+        {
+            if (!vessel.mainBody.ocean)
+                return false;
+
+            for (int i = 0; i < thrustTransforms.Count; i++)
+            {
+                if (FlightGlobals.getAltitudeAtPos(thrustTransforms[i].position) < 0f)
+                    return true;
+            }
+            return false;
+        }
+
         #region Engine Fitting
 
         virtual public bool ShouldFitParameter(EngineParameterInfo info)
@@ -529,6 +543,7 @@ namespace SolverEngines
             
             flameout = false;
 
+            UpdatePropellantStatus();
             if (PropellantAvailable())
                 lastPropellantFraction = 1d;
             else
