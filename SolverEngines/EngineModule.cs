@@ -230,7 +230,7 @@ namespace SolverEngines
 
         virtual protected void UpdateTemp()
         {
-            if (tempRatio > 1d)
+            if (tempRatio > 1d && !CheatOptions.IgnoreMaxTemperature)
             {
                 FlightLogger.eventLog.Add("[" + FormatTime(vessel.missionTime) + "] " + part.partInfo.title + " melted its internals from heat.");
                 part.explode();
