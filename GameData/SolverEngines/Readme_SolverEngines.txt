@@ -27,6 +27,9 @@ SolverEngines includes a GUI to display useful information about engines in flig
 See AJE or RealFuels for examples of how to implement SolverEngines in practice.
 
 Changelog:
+v1.13
+* Respect the "Ignore Max Temperature" cheat option.
+
 v1.12
 * Update to KSP 1.0.5.
 * Get rid of ModuleAnimateEmissive, now unneded with stock changes.
