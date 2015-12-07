@@ -11,7 +11,13 @@ namespace SolverEngines
     /// Property describing parameters which will be input into an engine solver
     /// </summary>
     [System.AttributeUsage(System.AttributeTargets.Field)]
-    public class EngineParameter : Attribute { }
+    public class EngineParameter : Attribute
+    {
+        virtual public bool IsFitResult()
+        {
+            return false;
+        }
+    }
 
     /// <summary>
     /// Property describing pieces of data which will be used to fit particular engine parameters (those having the EngineFitResult property)
@@ -24,7 +30,13 @@ namespace SolverEngines
     /// Property describing engine parameters which will be fit based on EngineFitData
     /// </summary>
     [System.AttributeUsage(System.AttributeTargets.Field)]
-    public class EngineFitResult : EngineParameter { }
+    public class EngineFitResult : EngineParameter
+    {
+        public override bool IsFitResult()
+        {
+            return true;
+        }
+    }
 
     /// <summary>
     /// Describes a field which has the EngineParameter (or derived from) property
@@ -81,6 +93,11 @@ namespace SolverEngines
             }
         }
 
+        public bool IsFitResult()
+        {
+            return Param.IsFitResult();
+        }
+
         /// <summary>
         /// Gets the value of the associated field
         /// </summary>
@@ -121,10 +138,7 @@ namespace SolverEngines
             if (node == null)
                 return false;
             string databaseString = node.GetValue(Name);
-            object databaseValue = null;
-            if (databaseString != null)
-                databaseValue = Convert.ChangeType(node.GetValue(Name), FieldType);
-            return Field.GetValue(Module).Equals(databaseValue);
+            return GetValueStr().Equals(databaseString ?? null);
         }
 
         /// <summary>
