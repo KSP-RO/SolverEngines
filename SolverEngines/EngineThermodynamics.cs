@@ -311,8 +311,8 @@ namespace SolverEngines
                 _T = v.atmosphericTemperature;
 
             Far = 0d; // Recalculates, so no need to do by hand
-            if (Math.Abs(v.atmDensity / Rho - 1d) > 0.01d)
-                Debug.LogWarning("Ambient density does not obey the gas law for vessel " + v.name);
+            //if (Math.Abs(v.atmDensity / Rho - 1d) > 0.01d)
+            //    Debug.LogWarning("Ambient density does not obey the gas law for vessel " + v.name);
         }
 
         /// <summary>
@@ -328,11 +328,11 @@ namespace SolverEngines
             _T = FlightGlobals.getExternalTemperature(altitude, body);
             Far = 0d; // Recalculates, so no need to do by hand
 
-            if (Math.Abs(FlightGlobals.getAtmDensity(P, T, body) / Rho - 1d) > 0.01d)
-                if (body != null)
-                    Debug.LogWarning("Ambient density does not obey the gas law on body " + body.name + " at altitude " + altitude.ToString());
-                else
-                    Debug.LogWarning("Ambient density does not obey the gas law on body at altitude " + altitude.ToString());
+            //if (Math.Abs(FlightGlobals.getAtmDensity(P, T, body) / Rho - 1d) > 0.01d)
+            //    if (body != null)
+            //        Debug.LogWarning("Ambient density does not obey the gas law on body " + body.name + " at altitude " + altitude.ToString());
+            //    else
+            //        Debug.LogWarning("Ambient density does not obey the gas law on body at altitude " + altitude.ToString());
         }
 
         /// <summary>
@@ -348,11 +348,11 @@ namespace SolverEngines
             _T = FlightGlobals.getExternalTemperature(position, body);
             Far = 0d; // Recalculates, so no need to do by hand
 
-            if (Math.Abs(FlightGlobals.getAtmDensity(P, T, body) / Rho - 1d) > 0.01d)
-                if (body != null)
-                    Debug.LogWarning("Ambient density does not obey the gas law on body " + body.name + " at position " + position.ToString());
-                else
-                    Debug.LogWarning("Ambient density does not obey the gas law on body at position " + position.ToString());
+            //if (Math.Abs(FlightGlobals.getAtmDensity(P, T, body) / Rho - 1d) > 0.01d)
+            //    if (body != null)
+            //        Debug.LogWarning("Ambient density does not obey the gas law on body " + body.name + " at position " + position.ToString());
+            //    else
+            //        Debug.LogWarning("Ambient density does not obey the gas law on body at position " + position.ToString());
         }
 
         /// <summary>
