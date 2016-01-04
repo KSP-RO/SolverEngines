@@ -8,6 +8,22 @@ namespace SolverEngines
 {
     public static class SolverMathUtil
     {
+        /// <summary>
+        /// Basic lerp method
+        /// Clamps t between 0 and 1 then lerps between min and max
+        /// </summary>
+        /// <param name="min">Minimum value (at t=0)</param>
+        /// <param name="max">Maximum value (at t=1)</param>
+        /// <param name="t">Normalized time between min and max</param>
+        /// <returns>Lerped value: min + (max - min) * t</returns>
+        public static double Lerp(double min, double max, double t)
+        {
+            t = Math.Max(0d, t);
+            t = Math.Min(t, 1d);
+
+            return min + (max - min) * t;
+        }
+
         // This method is written by ferram4 - used with permission
 
         /// <summary>
