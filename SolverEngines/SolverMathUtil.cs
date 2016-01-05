@@ -9,6 +9,20 @@ namespace SolverEngines
     public static class SolverMathUtil
     {
         /// <summary>
+        /// Basic clamping method
+        /// </summary>
+        /// <param name="min">If value is less than this, the return value will be equal to this</param>
+        /// <param name="max">If value is greater than this, the return value will be equal to this</param>
+        /// <param name="value">The value to clamp.  If it is between min and max, it will be returned</param>
+        /// <returns>value, clamped between min and max</returns>
+        public static double Clamp(double min, double max, double value)
+        {
+            value = Math.Max(0d, value);
+            value = Math.Min(value, 1d);
+            return value;
+        }
+
+        /// <summary>
         /// Basic lerp method
         /// Clamps t between 0 and 1 then lerps between min and max
         /// </summary>
@@ -18,8 +32,7 @@ namespace SolverEngines
         /// <returns>Lerped value: min + (max - min) * t</returns>
         public static double Lerp(double min, double max, double t)
         {
-            t = Math.Max(0d, t);
-            t = Math.Min(t, 1d);
+            t = Clamp(0d, 1d, t);
 
             return min + (max - min) * t;
         }
