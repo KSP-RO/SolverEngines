@@ -459,6 +459,18 @@ namespace SolverEngines
             return P / Math.Pow(0.5 * (Gamma + 1d), Cp / R);
         }
 
+        /// <summary>
+        /// Real temperature at a particular mach number in this isentropic flow.
+        /// Note that real temperature is mach number dependent while total (stagnation) temperature is constant.
+        /// </summary>
+        /// <param name="mach"></param>
+        /// <returns>Real temperature</returns>
+        public double TemperatureAtMach(double mach)
+        {
+            double factor = 0.5d * (Gamma - 1d) * mach * mach + 1d;
+            return T / factor;
+        }
+
         public override string ToString()
         {
             string returnString = "";

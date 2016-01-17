@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\GameData\SolverEngines\Plugins\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -32,6 +32,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AJEInlet.cs" />
+    <Compile Include="EngineAnimation.cs" />
     <Compile Include="EngineDatabase.cs" />
     <Compile Include="EngineFitUtil.cs" />
     <Compile Include="EngineModule.cs" />
