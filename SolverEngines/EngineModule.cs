@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using KSP.UI.Screens;
 using System.Reflection;
 
 
@@ -55,7 +56,7 @@ namespace SolverEngines
         // internals
         protected double tempRatio = 0d, engineTemp = 288.15d;
         protected double lastPropellantFraction = 1d;
-        protected VInfoBox overheatBox = null;
+        protected ProtoStageIconInfo overheatBox = null;
 
         protected List<ModuleAnimateHeat> emissiveAnims;
 
@@ -324,7 +325,7 @@ namespace SolverEngines
 
                 massFlow = fuelFlow * 0.001d * TimeWarp.fixedDeltaTime; // in tons
 
-                if (CheatOptions.InfiniteFuel == true)
+                if (CheatOptions.InfinitePropellant == true)
                 {
                     lastPropellantFraction = 1d;
                     UnFlameout();
