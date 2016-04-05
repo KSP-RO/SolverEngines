@@ -152,7 +152,7 @@ namespace SolverEngines
         {
             base.OnLoad(node);
 
-            thrustTransforms = new List<Transform>(part.FindModelTransforms(thrustVectorTransformName));
+            thrustTransforms = new List<Transform>(part.FindModelTransforms(thrustVectorTransformName)); // should be done by base, but no harm doing it again.
             // -- will be done on Start - CreateEngine();
         }
 
@@ -200,14 +200,12 @@ namespace SolverEngines
                 // now apply the thrust
                 if (part.Rigidbody != null)
                 {
-                    int tCount = thrustTransforms.Count;
-                    float thrustPortion = finalThrust / tCount;
                     Transform t;
-                    for (int i = 0; i < tCount; ++i)
+                    for (int i = thrustTransforms.Count - 1; i >= 0; --i)
                     {
                         t = thrustTransforms[i];
                         Vector3 axis = useZaxis ? -t.forward : -t.up;
-                        part.Rigidbody.AddForceAtPosition(thrustRot * (axis * thrustPortion), t.position + t.rotation * thrustOffset, ForceMode.Force);
+                        part.Rigidbody.AddForceAtPosition(thrustRot * (axis * thrustTransformMultipliers[i]), t.position + t.rotation * thrustOffset, ForceMode.Force);
                     }
                 }
                 EngineExhaustDamage();
