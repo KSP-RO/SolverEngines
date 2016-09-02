@@ -247,7 +247,8 @@ namespace SolverEngines
         public EngineThermodynamics ChangeReferenceFrameMach(double mach)
         {
             EngineThermodynamics result = this;
-            result.T *= 0.5 * (Gamma - 1) * mach * mach * Math.Sign(mach) + 1d;
+            double machFactor = 0.5 * (Gamma - 1) * mach * mach + 1d;
+            result.T *= (mach > 0d) ? machFactor : 1d / machFactor;
             double pressureExponent = Cp / R;
             result.P *= Math.Pow(result.T / T, pressureExponent);
             return result;
