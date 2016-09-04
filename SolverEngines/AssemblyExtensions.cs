@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Reflection;
 
 namespace SolverEngines
@@ -18,7 +19,7 @@ namespace SolverEngines
         /// </summary>
         /// <param name="assembly">Assembly to generate checksum for</param>
         /// <returns>Checksum as a string.  Represented in hexadecimal separated by dashes</returns>
-        public static string GetChecksum(this Assembly assembly) => FileUtil.FileHash(AssemblyPath(assembly));
+        public static string GetChecksum(this Assembly assembly) => FileUtil.FileHash(assembly.GetPath());
 
         /// <summary>
         /// Find the file path of a particular assembly
@@ -31,5 +32,7 @@ namespace SolverEngines
             UriBuilder uri = new UriBuilder(codeBase);
             return Uri.UnescapeDataString(uri.Path);
         }
+
+        public static string GetDirectory(this Assembly assembly) => Path.GetDirectoryName(assembly.GetPath());
     }
 }

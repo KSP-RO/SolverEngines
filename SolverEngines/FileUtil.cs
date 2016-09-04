@@ -23,5 +23,17 @@ namespace SolverEngines
 
             return BitConverter.ToString(hash);
         }
+
+        public static string JoinPath(params string[] paths)
+        {
+            string resultPath = paths[0];
+
+            for (int i = 1; i < paths.Length; i++)
+            {
+                resultPath = Path.Combine(resultPath, paths[i]);
+            }
+
+            return Path.GetFullPath(resultPath);
+        }
     }
 }

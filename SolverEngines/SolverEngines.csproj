@@ -32,12 +32,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AJEInlet.cs" />
+    <Compile Include="AssemblyExtensions.cs" />
     <Compile Include="EngineAnimation.cs" />
     <Compile Include="EngineDatabase.cs" />
     <Compile Include="EngineFitUtil.cs" />
     <Compile Include="EngineModule.cs" />
     <Compile Include="EngineSolver.cs" />
     <Compile Include="EngineThermodynamics.cs" />
+    <Compile Include="FileUtil.cs" />
     <Compile Include="FlightDataWrapper.cs" />
     <Compile Include="EnginesGUI\FlightGUI.cs" />
     <Compile Include="EnginesGUI\FlightGUISettings.cs" />

@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Reflection;
+﻿using System.Reflection;
 using UnityEngine;
-using KSP;
-using SolverEngines;
 
 namespace SolverEngines
 {
@@ -17,24 +11,14 @@ namespace SolverEngines
     [KSPAddon(KSPAddon.Startup.Instantly, false)]
     class EngineDatabase : MonoBehaviour
     {
-        private static readonly string configPath = KSPUtil.ApplicationRootPath.Replace("\\", "/") + "GameData/SolverEngines/Plugins/PluginData/SolverEngines/EngineDatabse.cfg";
+
+        public static readonly Assembly SolverEnginesAssembly = typeof(EngineDatabase).Assembly;
+        public static readonly string SolverEnginesVersion = SolverEnginesAssembly.GetVersion().ToString();
+        public static readonly string SolverEnginesAssemblyChecksum = SolverEnginesAssembly.GetChecksum();
+
+        private static readonly string configPath = FileUtil.JoinPath(SolverEnginesAssembly.GetDirectory(), "PluginData", "SolverEngines", "EngineDatabse.cfg");
         private static readonly string databaseName = "SolverEnginesDatabase";
-
-        public static readonly Assembly SolverEnginesAssembly = null;
-        public static readonly string SolverEnginesVersion = null;
-        public static readonly string SolverEnginesAssemblyChecksum = null;
-
         private static ConfigNode database = null;
-
-        /// <summary>
-        /// Static constructor
-        /// </summary>
-        static EngineDatabase()
-        {
-            SolverEnginesAssembly = MethodBase.GetCurrentMethod().DeclaringType.Assembly;
-            SolverEnginesVersion = SolverEnginesAssembly.GetVersion().ToString();
-            SolverEnginesAssemblyChecksum = SolverEnginesAssembly.GetChecksum();
-        }
 
         public void Awake()
         {
