@@ -461,6 +461,7 @@ namespace SolverEngines
                 // Check for changes
                 foreach (EngineParameterInfo entry in engineFitParameters)
                 {
+                    if (entry.IsFitResult()) continue;
                     if (!entry.EqualsValueInNode(node))
                     {
                         doFit = true;
