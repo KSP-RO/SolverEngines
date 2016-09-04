@@ -19,20 +19,13 @@ namespace SolverEngines
         /// </summary>
         /// <param name="assembly">Assembly to generate checksum for</param>
         /// <returns>Checksum as a string.  Represented in hexadecimal separated by dashes</returns>
-        public static string GetChecksum(this Assembly assembly) => FileUtil.FileHash(assembly.GetPath());
+        public static string GetChecksum(this Assembly assembly) => FileUtil.FileHash(assembly.Location);
 
         /// <summary>
-        /// Find the file path of a particular assembly
+        /// Gets the path of the directory where this assembly is located
         /// </summary>
-        /// <param name="assembly">Assembly to find the path of</param>
-        /// <returns>File path of assembly</returns>
-        public static string GetPath(this Assembly assembly)
-        {
-            string codeBase = assembly.CodeBase;
-            UriBuilder uri = new UriBuilder(codeBase);
-            return Uri.UnescapeDataString(uri.Path);
-        }
-
-        public static string GetDirectory(this Assembly assembly) => Path.GetDirectoryName(assembly.GetPath());
+        /// <param name="assembly">Assembly to find the location of</param>
+        /// <returns>Path of the directory where this assembly is located</returns>
+        public static string GetDirectory(this Assembly assembly) => Path.GetDirectoryName(assembly.Location);
     }
 }
