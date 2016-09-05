@@ -35,6 +35,7 @@
     <Compile Include="AssemblyExtensions.cs" />
     <Compile Include="EngineAnimation.cs" />
     <Compile Include="EngineFitting\EngineDatabase.cs" />
+    <Compile Include="EngineFitting\EngineFitter.cs" />
     <Compile Include="EngineFitting\EngineFitUtil.cs" />
     <Compile Include="EngineModule.cs" />
     <Compile Include="EngineSolver.cs" />

@@ -70,28 +70,7 @@ namespace SolverEngines
 
         protected const double invg0 = 1d / 9.80665d;
 
-        // Engine fitting stuff
-        protected List<EngineParameterInfo> engineFitParameters = new List<EngineParameterInfo>();
-
         #region Overridable Methods
-
-        public override void OnAwake()
-        {
-            base.OnAwake();
-
-            engineFitParameters.Clear();
-
-            FieldInfo[] fields = this.GetType().GetFields();
-            foreach (FieldInfo field in fields)
-            {
-                object[] attributes = field.GetCustomAttributes(true);
-                foreach (object attribute in attributes)
-                {
-                    if (attribute is EngineParameter)
-                        engineFitParameters.Add(new EngineParameterInfo(this, field, attribute as EngineParameter));
-                }
-            }
-        }
 
         virtual public void CreateEngine()
         {
@@ -418,85 +397,13 @@ namespace SolverEngines
 
         virtual public bool CanFitEngine()
         {
-            foreach (EngineParameterInfo entry in engineFitParameters)
-            {
-                if (entry.IsFitResult())
-                    return true;
-            }
-
-            return false;
+            return true;
         }
 
         virtual public void FitEngineIfNecessary()
         {
-            if (!CanFitEngine())
-                return;
-
-            bool doFit = false;
-
-            ConfigNode node = EngineDatabase.GetNodeForEngine(this);
-            if (node == null)
-            {
-                doFit = true;
-            }
-            else
-            {
-                doFit = EngineDatabase.PluginUpdateCheck(this, node);
-
-                // Check for changes
-                foreach (EngineParameterInfo entry in engineFitParameters)
-                {
-                    if (entry.IsFitResult()) continue;
-                    if (!entry.EqualsValueInNode(node))
-                    {
-                        doFit = true;
-                        break;
-                    }
-                }
-                if (!doFit)
-                {
-                    Debug.Log("[" + this.GetType().Name + "] Reading engine params from cache for engine " + part.name);
-
-                    CreateEngineIfNecessary();
-
-                    foreach (EngineParameterInfo entry in engineFitParameters)
-                    {
-                        // Only copy things that would be fitted
-                        if (entry.IsFitResult())
-                            entry.SetValueFromNode(node);
-                    }
-                    PushFitParamsToSolver();
-                }
-            }
-
-            if (!doFit) return;
-            
-            Debug.Log("[" + this.GetType().Name + "] Fitting params for engine " + part.name);
-
-            CreateEngineIfNecessary();
-
-            // Copy valid fit results from database - they might still be correct
-            if (node != null)
-            {
-                foreach (EngineParameterInfo entry in engineFitParameters)
-                {
-                    if (entry.IsFitResult())
-                        entry.SetValueFromNode(node);
-                }
-            }
-
-            // Make sure everything has the correct value
-            PushFitParamsToSolver();
-            DoEngineFit();
-
-            ConfigNode newNode = new ConfigNode();
-
-            foreach (EngineParameterInfo entry in engineFitParameters)
-            {
-                newNode.SetValue(entry.Name, entry.GetValueStr(), true);
-            }
-
-            EngineDatabase.SetNodeForEngine(this, newNode);
+            EngineFitter fitter = new EngineFitter(this);
+            fitter.FitEngineIfNecessary();
         }
 
         virtual public void DoEngineFit()
