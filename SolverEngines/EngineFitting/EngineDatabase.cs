@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using UnityEngine;
 
-namespace SolverEngines
+namespace SolverEngines.EngineFitting
 {
     /// <summary>
     /// A class which keeps track of fitted engine parameters
