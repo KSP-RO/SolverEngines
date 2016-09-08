@@ -7,10 +7,19 @@ namespace SolverEngines.EngineFitting
 {
     public class EngineFitter
     {
-        private ModuleEnginesSolver engine;
+        public static void FitIfNecessary(object engine)
+        {
+            if (engine is IFittableEngine)
+            {
+                EngineFitter fitter = new EngineFitter((IFittableEngine)engine);
+                fitter.FitEngineIfNecessary();
+            }
+        }
+
+        private IFittableEngine engine;
         private List<EngineParameterInfo> engineFitParameters = new List<EngineParameterInfo>();
 
-        public EngineFitter(ModuleEnginesSolver engine)
+        public EngineFitter(IFittableEngine engine)
         {
             this.engine = engine;
 
@@ -19,7 +28,7 @@ namespace SolverEngines.EngineFitting
 
         public virtual bool EngineHasFitResults => engineFitParameters.Any(param => param.IsFitResult());
 
-        protected virtual bool ShouldFitEngine => EngineHasFitResults && engine.CanFitEngine();
+        protected virtual bool ShouldFitEngine => EngineHasFitResults && engine.CanFitEngine;
 
         public virtual void FitEngineIfNecessary()
         {
@@ -48,9 +57,7 @@ namespace SolverEngines.EngineFitting
                 }
                 if (!doFit)
                 {
-                    Debug.Log("[" + engine.GetType().Name + "] Reading engine params from cache for engine " + engine.part.name);
-
-                    engine.CreateEngineIfNecessary();
+                    Debug.Log("[" + engine.EngineTypeName + "] Reading engine params from cache for engine " + engine.EnginePartName);
 
                     foreach (EngineParameterInfo entry in engineFitParameters)
                     {
@@ -64,9 +71,7 @@ namespace SolverEngines.EngineFitting
 
             if (!doFit) return;
 
-            Debug.Log("[" + engine.GetType().Name + "] Fitting params for engine " + engine.part.name);
-
-            engine.CreateEngineIfNecessary();
+            Debug.Log("[" + engine.EngineTypeName + "] Fitting params for engine " + engine.EnginePartName);
 
             // Copy valid fit results from database - they might still be correct
             if (node != null)

@@ -63,11 +63,11 @@ namespace SolverEngines.EngineFitting
         /// </summary>
         /// <param name="engine">Engine module to search for.  Will use engine class, part name, and engineID to identify it</param>
         /// <returns>ConfigNode associated with engine if found, otherwise null</returns>
-        public static ConfigNode GetNodeForEngine(ModuleEnginesSolver engine)
+        public static ConfigNode GetNodeForEngine(IEngineIdentifier engine)
         {
-            string partName = engine.part.name;
-            string engineType = engine.GetType().Name;
-            string engineID = engine.engineID;
+            string partName = engine.EnginePartName;
+            string engineType = engine.EngineTypeName;
+            string engineID = engine.EngineID;
 
             ConfigNode partNode = database.GetNode(partName);
             if (partNode != null)
@@ -87,11 +87,11 @@ namespace SolverEngines.EngineFitting
         /// </summary>
         /// <param name="engine">Engine to associated this config node with</param>
         /// <param name="node">Config node describing engine parameters (both input parameters and fitted parameters)</param>
-        public static void SetNodeForEngine(ModuleEnginesSolver engine, ConfigNode node)
+        public static void SetNodeForEngine(IEngineIdentifier engine, ConfigNode node)
         {
-            string partName = engine.part.name;
-            string engineType = engine.GetType().Name;
-            string engineID = engine.engineID;
+            string partName = engine.EnginePartName;
+            string engineType = engine.EngineTypeName;
+            string engineID = engine.EngineID;
 
             Assembly assembly = engine.GetType().Assembly;
 
@@ -136,7 +136,7 @@ namespace SolverEngines.EngineFitting
         /// <param name="engine">Engine module to check.  Only used to find its declaring assembly.  Can be null</param>
         /// <param name="node">ConfigNode to check for versions and checksums</param>
         /// <returns></returns>
-        public static bool PluginUpdateCheck(ModuleEnginesSolver engine, ConfigNode node)
+        public static bool PluginUpdateCheck(object engine, ConfigNode node)
         {
             bool result = false;
             if (engine != null)

@@ -43,11 +43,11 @@ namespace SolverEngines.EngineFitting
     /// </summary>
     public struct EngineParameterInfo
     {
-        public readonly ModuleEnginesSolver Module;
+        public readonly object Module;
         public readonly FieldInfo Field;
         public readonly EngineParameter Param;
 
-        public EngineParameterInfo(ModuleEnginesSolver module, FieldInfo field, EngineParameter param)
+        public EngineParameterInfo(object module, FieldInfo field, EngineParameter param)
         {
             Module = module;
             Field = field;

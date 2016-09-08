@@ -11,7 +11,7 @@ namespace SolverEngines
     /// Base module for AJE engines
     /// Derive from this for a real engine; this *will not work* alone.
     /// </summary>
-    public abstract class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo, IEngineStatus
+    public abstract class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo, IEngineStatus, IEngineIdentifier
     {
         // base fields
 
@@ -69,6 +69,15 @@ namespace SolverEngines
         protected Quaternion thrustRot = Quaternion.identity;
 
         protected const double invg0 = 1d / 9.80665d;
+
+        #region Properties
+
+        public virtual string EnginePartName => part.name;
+        public virtual string EngineTypeName => moduleName;
+        public virtual string EngineID => engineID;
+        public virtual string EngineConfigName => string.Empty;
+
+        #endregion
 
         #region Overridable Methods
 
@@ -395,25 +404,9 @@ namespace SolverEngines
 
         #region Engine Fitting
 
-        virtual public bool CanFitEngine()
-        {
-            return true;
-        }
-
         virtual public void FitEngineIfNecessary()
         {
-            EngineFitter fitter = new EngineFitter(this);
-            fitter.FitEngineIfNecessary();
-        }
-
-        virtual public void DoEngineFit()
-        {
-            throw new NotImplementedException();
-        }
-
-        virtual public void PushFitParamsToSolver()
-        {
-            throw new NotImplementedException();
+            EngineFitter.FitIfNecessary(this);
         }
 
         #endregion

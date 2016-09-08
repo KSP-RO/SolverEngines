@@ -37,6 +37,8 @@
     <Compile Include="EngineFitting\EngineDatabase.cs" />
     <Compile Include="EngineFitting\EngineFitter.cs" />
     <Compile Include="EngineFitting\EngineFitUtil.cs" />
+    <Compile Include="EngineFitting\IEngineIdentifier.cs" />
+    <Compile Include="EngineFitting\IFittableEngine.cs" />
     <Compile Include="EngineModule.cs" />
     <Compile Include="EngineSolver.cs" />
     <Compile Include="EngineThermodynamics.cs" />
