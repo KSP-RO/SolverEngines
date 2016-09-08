@@ -183,7 +183,7 @@ namespace SolverEngines
                     {
                         t = thrustTransforms[i];
                         Vector3 axis = useZaxis ? -t.forward : -t.up;
-                        part.Rigidbody.AddForceAtPosition(thrustRot * (axis * thrustTransformMultipliers[i] * finalThrust), t.position + t.rotation * thrustOffset, ForceMode.Force);
+                        part.AddForceAtPosition(thrustRot * (axis * thrustTransformMultipliers[i] * finalThrust), t.position + t.rotation * thrustOffset);
                     }
                 }
                 EngineExhaustDamage();
