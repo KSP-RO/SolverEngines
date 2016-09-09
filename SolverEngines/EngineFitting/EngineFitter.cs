@@ -7,12 +7,12 @@ namespace SolverEngines.EngineFitting
 {
     public class EngineFitter
     {
-        public static void FitIfNecessary(object engine)
+        public static void FitIfNecessary(object engine, bool saveToDatabase)
         {
             if (engine is IFittableEngine)
             {
                 EngineFitter fitter = new EngineFitter((IFittableEngine)engine);
-                fitter.FitEngineIfNecessary();
+                fitter.FitEngineIfNecessary(saveToDatabase);
             }
         }
 
@@ -30,7 +30,7 @@ namespace SolverEngines.EngineFitting
 
         protected virtual bool ShouldFitEngine => EngineHasFitResults && engine.CanFitEngine;
 
-        public virtual void FitEngineIfNecessary()
+        public virtual void FitEngineIfNecessary(bool saveToDatabase)
         {
             if (!ShouldFitEngine) return;
 
@@ -94,10 +94,16 @@ namespace SolverEngines.EngineFitting
                 newNode.SetValue(entry.Name, entry.GetValueStr(), true);
             }
 
-            EngineDatabase.SetNodeForEngine(engine, newNode);
+            if (saveToDatabase)
+            {
+#if DEBUG
+                Debug.Log("Saving fitted engine parameters to database");
+#endif
+                EngineDatabase.SetNodeForEngine(engine, newNode);
+            }
         }
 
-        #region Private Methods
+#region Private Methods
 
         protected virtual void SetupFitParameters()
         {
@@ -113,6 +119,6 @@ namespace SolverEngines.EngineFitting
             }
         }
 
-        #endregion
+#endregion
     }
 }

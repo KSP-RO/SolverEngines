@@ -407,7 +407,7 @@ namespace SolverEngines
 
         virtual public void FitEngineIfNecessary()
         {
-            EngineFitter.FitIfNecessary(this);
+            EngineFitter.FitIfNecessary(this, !part.HasParsedPrefab());
         }
 
         #endregion
