@@ -20,6 +20,8 @@ namespace SolverEngines.EngineFitting
         private static readonly string databaseName = "SolverEnginesDatabase";
         private static ConfigNode database = null;
 
+        private static AssemblyChecksumCache checksumCache = new AssemblyChecksumCache();
+
         public void Awake()
         {
             LoadDatabase();
@@ -97,7 +99,7 @@ namespace SolverEngines.EngineFitting
 
             node.SetValue("engineID", engineID, true);
             node.SetValue("DeclaringAssemblyVersion", assembly.GetVersion().ToString(), true);
-            node.SetValue("DeclaringAssemblyChecksum", assembly.GetChecksum(), true);
+            node.SetValue("DeclaringAssemblyChecksum", checksumCache.GetChecksum(assembly), true);
             node.SetValue("SolverEnginesVersion", SolverEnginesVersion, true);
             node.SetValue("SolverEnginesAssemblyChecksum", SolverEnginesAssemblyChecksum, true);
 
@@ -143,7 +145,7 @@ namespace SolverEngines.EngineFitting
             {
                 Assembly assembly = engine.GetType().Assembly;
                 result |= (assembly.GetVersion().ToString() != node.GetValue("DeclaringAssemblyVersion"));
-                result |= (assembly.GetChecksum() != node.GetValue("DeclaringAssemblyChecksum"));
+                result |= (checksumCache.GetChecksum(assembly) != node.GetValue("DeclaringAssemblyChecksum"));
             }
             result |= (SolverEnginesVersion != node.GetValue("SolverEnginesVersion"));
             result |= (SolverEnginesAssemblyChecksum != node.GetValue("SolverEnginesAssemblyChecksum"));

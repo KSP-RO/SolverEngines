@@ -34,6 +34,7 @@
     <Compile Include="AJEInlet.cs" />
     <Compile Include="AssemblyExtensions.cs" />
     <Compile Include="EngineAnimation.cs" />
+    <Compile Include="EngineFitting\AssemblyChecksumCache.cs" />
     <Compile Include="EngineFitting\EngineDatabase.cs" />
     <Compile Include="EngineFitting\EngineFitter.cs" />
     <Compile Include="EngineFitting\EngineFitUtil.cs" />
