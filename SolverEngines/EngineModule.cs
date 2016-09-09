@@ -119,8 +119,6 @@ namespace SolverEngines
             for (int i = 0; i < mCount; ++i)
                 if (part.Modules[i] is ModuleAnimateHeat)
                     emissiveAnims.Add(part.Modules[i] as ModuleAnimateHeat);
-
-            FitEngineIfNecessary();
         }
 
         public override void OnLoad(ConfigNode node)
@@ -129,6 +127,9 @@ namespace SolverEngines
 
             thrustTransforms = new List<Transform>(part.FindModelTransforms(thrustVectorTransformName)); // should be done by base, but no harm doing it again.
             // -- will be done on Start - CreateEngine();
+
+            CreateEngine();
+            FitEngineIfNecessary();
         }
 
         new virtual public void FixedUpdate()
