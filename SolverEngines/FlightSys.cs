@@ -11,8 +11,6 @@ namespace SolverEngines
 {
     public class SolverFlightSys : VesselModule
     {
-        private Vessel vessel;
-
         public double InletArea { get; private set; }
         public double EngineArea { get; private set; }
         public double AreaRatio { get; private set; }
@@ -34,7 +32,6 @@ namespace SolverEngines
 
         private void Start()
         {
-            vessel = gameObject.GetComponent<Vessel>();
             this.enabled = true;
             updatePartsList();
 
