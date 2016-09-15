@@ -119,6 +119,8 @@ namespace SolverEngines
             for (int i = 0; i < mCount; ++i)
                 if (part.Modules[i] is ModuleAnimateHeat)
                     emissiveAnims.Add(part.Modules[i] as ModuleAnimateHeat);
+
+            CreateEngineIfNecessary();
         }
 
         public override void OnLoad(ConfigNode node)
