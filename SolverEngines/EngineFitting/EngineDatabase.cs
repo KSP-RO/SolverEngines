@@ -8,9 +8,26 @@ namespace SolverEngines.EngineFitting
     /// Addon is destroyed in loading screen, but static members can still be accessed
     /// Also provides methods for checking whether a plugin has updated, either by version of by checksum
     /// </summary>
-    [KSPAddon(KSPAddon.Startup.Instantly, false)]
-    class EngineDatabase : MonoBehaviour
+    public static class EngineDatabase
     {
+        // This basically just ensures that the database gets saved to file on the next scene change
+        private class PersistenceObject : MonoBehaviour
+        {
+            private void Awake()
+            {
+                LoadDatabase();
+            }
+
+            private void OnDestroy()
+            {
+                if (database == null)
+                    return;
+
+                SaveDatabase();
+            }
+        }
+
+        private static PersistenceObject persistenceObject;
 
         public static readonly Assembly SolverEnginesAssembly = typeof(EngineDatabase).Assembly;
         public static readonly string SolverEnginesVersion = SolverEnginesAssembly.GetVersion().ToString();
@@ -22,17 +39,21 @@ namespace SolverEngines.EngineFitting
 
         private static AssemblyChecksumCache checksumCache = new AssemblyChecksumCache();
 
-        public void Awake()
+        static EngineDatabase()
         {
-            LoadDatabase();
+            EnsurePersistenceObject();
         }
 
-        public void OnDestroy()
+        public static void ModuleManagerPostLoad()
         {
-            if (database == null)
-                return;
+            EnsurePersistenceObject();
+        }
 
-            SaveDatabase();
+        private static void EnsurePersistenceObject()
+        {
+            if (persistenceObject != null) return;
+            GameObject go = new GameObject("EngineDatabasePersistenceObject");
+            persistenceObject = go.AddComponent<PersistenceObject>();
         }
 
         /// <summary>
@@ -52,6 +73,9 @@ namespace SolverEngines.EngineFitting
         /// </summary>
         public static void SaveDatabase()
         {
+#if DEBUG
+            Debug.Log("[SolverEngines] Saving engine database");
+#endif
             string dirName = System.IO.Path.GetDirectoryName(configPath);
             if (!System.IO.Directory.Exists(dirName))
                 System.IO.Directory.CreateDirectory(dirName);
@@ -126,8 +150,6 @@ namespace SolverEngines.EngineFitting
             }
 
             partNode.SetNode(engineType, node, nodeIndex, true);
-
-            SaveDatabase();
         }
 
         /// <summary>
