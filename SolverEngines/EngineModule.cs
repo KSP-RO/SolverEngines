@@ -466,7 +466,7 @@ namespace SolverEngines
         {
             int eCount = emissiveAnims.Count;
             for (int i = 0; i < eCount; ++i)
-                emissiveAnims[i].SetState(val);
+                emissiveAnims[i].SetScalar((float)val);
         }
 
         protected void UpdateOverheatBox(double val, double minVal)
