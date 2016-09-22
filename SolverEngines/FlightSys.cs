@@ -30,8 +30,10 @@ namespace SolverEngines
 
         public EngineThermodynamics InletTherm;
 
-        private void Start()
+        protected override void OnStart()
         {
+            base.OnStart();
+
             this.enabled = true;
             updatePartsList();
 
