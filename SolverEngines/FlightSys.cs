@@ -95,14 +95,14 @@ namespace SolverEngines
                 }
             }
 
-            AmbientTherm.FromVesselAmbientConditions(vessel);
+            AmbientTherm = EngineThermodynamics.VesselAmbientConditions(vessel);
             Mach = vessel.mach;
 
             // Transform from static frame to vessel frame, increasing total pressure and temperature
             if (vessel.srfSpeed < 0.01d)
-                InletTherm.CopyFrom(AmbientTherm);
+                InletTherm = AmbientTherm;
             else
-                InletTherm.FromChangeReferenceFrame(AmbientTherm, vessel.srfSpeed);
+                InletTherm = AmbientTherm.ChangeReferenceFrame(vessel.srfSpeed);
             InletTherm.P *= OverallTPR; // TPR accounts for loss of total pressure by inlet
 
             // Push parameters to each engine

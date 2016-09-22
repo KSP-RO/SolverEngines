@@ -54,8 +54,8 @@ namespace SolverEngines
         /// <param name="isUnderwater">Is the engine's thrust transform underwater</param>
         virtual public void SetFreestreamAndInlet(EngineThermodynamics ambientTherm, EngineThermodynamics inletTherm, double altitude, double inMach, Vector3 inVel, bool hasOxygen, bool isUnderwater)
         {
-            th0.CopyFrom(ambientTherm);
-            th1.CopyFrom(inletTherm);
+            th0 = ambientTherm;
+            th1 = inletTherm;
             alt = altitude;
             p0 = ambientTherm.P;
             t0 = ambientTherm.T;
@@ -138,10 +138,10 @@ namespace SolverEngines
         protected void SetStaticConditions(bool usePlanetarium = true, double overallTPR = 1d)
         {
             EngineThermodynamics ambientTherm = new EngineThermodynamics();
-            ambientTherm.FromStandardConditions(usePlanetarium);
+            ambientTherm = EngineThermodynamics.StandardConditions(usePlanetarium);
 
             EngineThermodynamics inletTherm = new EngineThermodynamics();
-            inletTherm.CopyFrom(ambientTherm);
+            inletTherm = ambientTherm;
             inletTherm.P *= overallTPR;
 
             SetFreestreamAndInlet(ambientTherm, inletTherm, 0d, 0d, Vector3.zero, true, false);

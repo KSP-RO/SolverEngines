@@ -111,10 +111,6 @@ namespace SolverEngines
         virtual public void Start()
         {
             CreateEngine();
-            if (ambientTherm == null)
-                ambientTherm = new EngineThermodynamics();
-            if (inletTherm == null)
-                inletTherm = new EngineThermodynamics();
             Need_Area = RequiredIntakeArea();
             Fields["Need_Area"].guiActiveEditor = Need_Area > 0f;
 
@@ -132,11 +128,6 @@ namespace SolverEngines
             // set initial params
             engineTemp = 288.15d;
             currentThrottle = 0f;
-
-            if (ambientTherm == null)
-                ambientTherm = new EngineThermodynamics();
-            if (inletTherm == null)
-                inletTherm = new EngineThermodynamics();
 
             // Get emissives
             emissiveAnims = new List<ModuleAnimateHeat>();
@@ -248,9 +239,7 @@ namespace SolverEngines
                 return;
             }
 
-            // CopyFrom avoids GC associated with allocating a new one every frame
-            // Could probably just assign since this *shouldn't* be changed, but just to be sure
-            this.inletTherm.CopyFrom(inletTherm);
+            this.inletTherm = inletTherm;
             this.areaRatio = areaRatio;
 
         }
@@ -263,13 +252,13 @@ namespace SolverEngines
 
         virtual public void UpdateFlightCondition()
         {
-            ambientTherm.FromVesselAmbientConditions(vessel, useExtTemp);
+            ambientTherm = EngineThermodynamics.VesselAmbientConditions(vessel, useExtTemp);
         }
 
         virtual public void UpdateSolver(EngineThermodynamics ambientTherm, double altitude, Vector3d vel, double mach, bool ignited, bool oxygen, bool underwater)
         {
             // In flight, these are the same and this will just return
-            this.ambientTherm.CopyFrom(ambientTherm);
+            this.ambientTherm = ambientTherm;
 
             engineSolver.SetEngineState(ignited, lastPropellantFraction);
             engineSolver.SetFreestreamAndInlet(ambientTherm, inletTherm, altitude, mach, vel, oxygen, underwater);
