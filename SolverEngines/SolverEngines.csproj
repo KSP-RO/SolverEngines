@@ -32,12 +32,18 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AJEInlet.cs" />
+    <Compile Include="AssemblyExtensions.cs" />
     <Compile Include="EngineAnimation.cs" />
-    <Compile Include="EngineDatabase.cs" />
-    <Compile Include="EngineFitUtil.cs" />
+    <Compile Include="EngineFitting\AssemblyChecksumCache.cs" />
+    <Compile Include="EngineFitting\EngineDatabase.cs" />
+    <Compile Include="EngineFitting\EngineFitter.cs" />
+    <Compile Include="EngineFitting\EngineFitUtil.cs" />
+    <Compile Include="EngineFitting\IEngineIdentifier.cs" />
+    <Compile Include="EngineFitting\IFittableEngine.cs" />
     <Compile Include="EngineModule.cs" />
     <Compile Include="EngineSolver.cs" />
     <Compile Include="EngineThermodynamics.cs" />
+    <Compile Include="FileUtil.cs" />
     <Compile Include="FlightDataWrapper.cs" />
     <Compile Include="EnginesGUI\FlightGUI.cs" />
     <Compile Include="EnginesGUI\FlightGUISettings.cs" />
@@ -45,6 +51,7 @@
     <Compile Include="EnginesGUI\GUIUnits.cs" />
     <Compile Include="EnginesGUI\GUIUnitsSettings.cs" />
     <Compile Include="EnginesGUI\GUIUtil.cs" />
+    <Compile Include="PartExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SolverMathUtil.cs" />
     <Compile Include="ToolbarWrapper.cs" />

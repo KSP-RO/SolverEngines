@@ -1,13 +1,9 @@
-﻿using KSP;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 using KSP.UI.Screens;
 using System.Reflection;
-
+using SolverEngines.EngineFitting;
 
 namespace SolverEngines
 {
@@ -15,7 +11,7 @@ namespace SolverEngines
     /// Base module for AJE engines
     /// Derive from this for a real engine; this *will not work* alone.
     /// </summary>
-    public abstract class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo, IEngineStatus
+    public abstract class ModuleEnginesSolver : ModuleEnginesFX, IModuleInfo, IEngineStatus, IEngineIdentifier
     {
         // base fields
 
@@ -74,28 +70,16 @@ namespace SolverEngines
 
         protected const double invg0 = 1d / 9.80665d;
 
-        // Engine fitting stuff
-        protected List<EngineParameterInfo> engineFitParameters = new List<EngineParameterInfo>();
+        #region Properties
+
+        public virtual string EnginePartName => part.name;
+        public virtual string EngineTypeName => moduleName;
+        public virtual string EngineID => engineID;
+        public virtual string EngineConfigName => string.Empty;
+
+        #endregion
 
         #region Overridable Methods
-
-        public override void OnAwake()
-        {
-            base.OnAwake();
-
-            engineFitParameters.Clear();
-
-            FieldInfo[] fields = this.GetType().GetFields();
-            foreach (FieldInfo field in fields)
-            {
-                object[] attributes = field.GetCustomAttributes(true);
-                foreach (object attribute in attributes)
-                {
-                    if (attribute is EngineParameter)
-                        engineFitParameters.Add(new EngineParameterInfo(this, field, attribute as EngineParameter));
-                }
-            }
-        }
 
         virtual public void CreateEngine()
         {
@@ -136,7 +120,7 @@ namespace SolverEngines
                 if (part.Modules[i] is ModuleAnimateHeat)
                     emissiveAnims.Add(part.Modules[i] as ModuleAnimateHeat);
 
-            FitEngineIfNecessary();
+            CreateEngineIfNecessary();
         }
 
         public override void OnLoad(ConfigNode node)
@@ -145,6 +129,9 @@ namespace SolverEngines
 
             thrustTransforms = new List<Transform>(part.FindModelTransforms(thrustVectorTransformName)); // should be done by base, but no harm doing it again.
             // -- will be done on Start - CreateEngine();
+
+            CreateEngine();
+            FitEngineIfNecessary();
         }
 
         new virtual public void FixedUpdate()
@@ -420,97 +407,9 @@ namespace SolverEngines
 
         #region Engine Fitting
 
-        virtual public bool CanFitEngine()
-        {
-            foreach (EngineParameterInfo entry in engineFitParameters)
-            {
-                if (entry.IsFitResult())
-                    return true;
-            }
-
-            return false;
-        }
-
         virtual public void FitEngineIfNecessary()
         {
-            if (!CanFitEngine())
-                return;
-
-            bool doFit = false;
-
-            ConfigNode node = EngineDatabase.GetNodeForEngine(this);
-            if (node == null)
-            {
-                doFit = true;
-            }
-            else
-            {
-                doFit = EngineDatabase.PluginUpdateCheck(this, node);
-
-                // Check for changes
-                foreach (EngineParameterInfo entry in engineFitParameters)
-                {
-                    if (entry.IsFitResult()) continue;
-                    if (!entry.EqualsValueInNode(node))
-                    {
-                        doFit = true;
-                        break;
-                    }
-                }
-                if (!doFit)
-                {
-                    Debug.Log("[" + this.GetType().Name + "] Reading engine params from cache for engine " + part.name);
-
-                    CreateEngineIfNecessary();
-
-                    foreach (EngineParameterInfo entry in engineFitParameters)
-                    {
-                        // Only copy things that would be fitted
-                        if (entry.IsFitResult())
-                            entry.SetValueFromNode(node);
-                    }
-                    PushFitParamsToSolver();
-                }
-            }
-
-            if (!doFit) return;
-            
-            Debug.Log("[" + this.GetType().Name + "] Fitting params for engine " + part.name);
-
-            CreateEngineIfNecessary();
-
-            // Copy valid fit results from database - they might still be correct
-            if (node != null)
-            {
-                foreach (EngineParameterInfo entry in engineFitParameters)
-                {
-                    if (entry.IsFitResult())
-                        entry.SetValueFromNode(node);
-                }
-            }
-
-            // Make sure everything has the correct value
-            PushFitParamsToSolver();
-            DoEngineFit();
-
-            ConfigNode newNode = new ConfigNode();
-
-            foreach (EngineParameterInfo entry in engineFitParameters)
-            {
-                newNode.SetValue(entry.Name, entry.GetValueStr(), true);
-            }
-
-            EngineDatabase.SetNodeForEngine(this, newNode);
-        }
-
-        virtual public void DoEngineFit()
-        {
-            throw new NotImplementedException();
-        }
-
-        virtual public void PushFitParamsToSolver()
-        {
-            throw new NotImplementedException();
+            EngineFitter.FitIfNecessary(this, !part.HasParsedPrefab());
         }
 
         #endregion

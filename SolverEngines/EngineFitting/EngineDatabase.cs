@@ -1,52 +1,59 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Reflection;
+﻿using System.Reflection;
 using UnityEngine;
-using KSP;
-using SolverEngines;
 
-namespace SolverEngines
+namespace SolverEngines.EngineFitting
 {
     /// <summary>
     /// A class which keeps track of fitted engine parameters
     /// Addon is destroyed in loading screen, but static members can still be accessed
     /// Also provides methods for checking whether a plugin has updated, either by version of by checksum
     /// </summary>
-    [KSPAddon(KSPAddon.Startup.Instantly, false)]
-    class EngineDatabase : MonoBehaviour
+    public static class EngineDatabase
     {
-        private static readonly string configPath = KSPUtil.ApplicationRootPath.Replace("\\", "/") + "GameData/SolverEngines/Plugins/PluginData/SolverEngines/EngineDatabse.cfg";
+        // This basically just ensures that the database gets saved to file on the next scene change
+        private class PersistenceObject : MonoBehaviour
+        {
+            private void Awake()
+            {
+                LoadDatabase();
+            }
+
+            private void OnDestroy()
+            {
+                if (database == null)
+                    return;
+
+                SaveDatabase();
+            }
+        }
+
+        private static PersistenceObject persistenceObject;
+
+        public static readonly Assembly SolverEnginesAssembly = typeof(EngineDatabase).Assembly;
+        public static readonly string SolverEnginesVersion = SolverEnginesAssembly.GetVersion().ToString();
+        public static readonly string SolverEnginesAssemblyChecksum = SolverEnginesAssembly.GetChecksum();
+
+        private static readonly string configPath = FileUtil.JoinPath(SolverEnginesAssembly.GetDirectory(), "PluginData", "SolverEngines", "EngineDatabse.cfg");
         private static readonly string databaseName = "SolverEnginesDatabase";
-
-        public static readonly Assembly SolverEnginesAssembly = null;
-        public static readonly string SolverEnginesVersion = null;
-        public static readonly string SolverEnginesAssemblyChecksum = null;
-
         private static ConfigNode database = null;
 
-        /// <summary>
-        /// Static constructor
-        /// </summary>
+        private static AssemblyChecksumCache checksumCache = new AssemblyChecksumCache();
+
         static EngineDatabase()
         {
-            SolverEnginesAssembly = MethodBase.GetCurrentMethod().DeclaringType.Assembly;
-            SolverEnginesVersion = AssemblyVersion(SolverEnginesAssembly);
-            SolverEnginesAssemblyChecksum = AssemblyChecksum(SolverEnginesAssembly);
+            EnsurePersistenceObject();
         }
 
-        public void Awake()
+        public static void ModuleManagerPostLoad()
         {
-            LoadDatabase();
+            EnsurePersistenceObject();
         }
 
-        public void OnDestroy()
+        private static void EnsurePersistenceObject()
         {
-            if (database == null)
-                return;
-
-            SaveDatabase();
+            if (persistenceObject != null) return;
+            GameObject go = new GameObject("EngineDatabasePersistenceObject");
+            persistenceObject = go.AddComponent<PersistenceObject>();
         }
 
         /// <summary>
@@ -66,6 +73,9 @@ namespace SolverEngines
         /// </summary>
         public static void SaveDatabase()
         {
+#if DEBUG
+            Debug.Log("[SolverEngines] Saving engine database");
+#endif
             string dirName = System.IO.Path.GetDirectoryName(configPath);
             if (!System.IO.Directory.Exists(dirName))
                 System.IO.Directory.CreateDirectory(dirName);
@@ -79,11 +89,11 @@ namespace SolverEngines
         /// </summary>
         /// <param name="engine">Engine module to search for.  Will use engine class, part name, and engineID to identify it</param>
         /// <returns>ConfigNode associated with engine if found, otherwise null</returns>
-        public static ConfigNode GetNodeForEngine(ModuleEnginesSolver engine)
+        public static ConfigNode GetNodeForEngine(IEngineIdentifier engine)
         {
-            string partName = engine.part.name;
-            string engineType = engine.GetType().Name;
-            string engineID = engine.engineID;
+            string partName = engine.EnginePartName;
+            string engineType = engine.EngineTypeName;
+            string engineID = engine.EngineID;
 
             ConfigNode partNode = database.GetNode(partName);
             if (partNode != null)
@@ -103,17 +113,17 @@ namespace SolverEngines
         /// </summary>
         /// <param name="engine">Engine to associated this config node with</param>
         /// <param name="node">Config node describing engine parameters (both input parameters and fitted parameters)</param>
-        public static void SetNodeForEngine(ModuleEnginesSolver engine, ConfigNode node)
+        public static void SetNodeForEngine(IEngineIdentifier engine, ConfigNode node)
         {
-            string partName = engine.part.name;
-            string engineType = engine.GetType().Name;
-            string engineID = engine.engineID;
+            string partName = engine.EnginePartName;
+            string engineType = engine.EngineTypeName;
+            string engineID = engine.EngineID;
 
             Assembly assembly = engine.GetType().Assembly;
 
             node.SetValue("engineID", engineID, true);
-            node.SetValue("DeclaringAssemblyVersion", EngineDatabase.AssemblyVersion(assembly), true);
-            node.SetValue("DeclaringAssemblyChecksum", EngineDatabase.AssemblyChecksum(assembly), true);
+            node.SetValue("DeclaringAssemblyVersion", assembly.GetVersion().ToString(), true);
+            node.SetValue("DeclaringAssemblyChecksum", checksumCache.GetChecksum(assembly), true);
             node.SetValue("SolverEnginesVersion", SolverEnginesVersion, true);
             node.SetValue("SolverEnginesAssemblyChecksum", SolverEnginesAssemblyChecksum, true);
 
@@ -123,7 +133,7 @@ namespace SolverEngines
             if (partNode != null)
             {
                 ConfigNode[] moduleNodes = partNode.GetNodes(engineType);
-                for (int i = 0; i < moduleNodes.Length; i++ )
+                for (int i = 0; i < moduleNodes.Length; i++)
                 {
                     ConfigNode mNode = moduleNodes[i];
                     if (mNode.GetValue("engineID") == engineID)
@@ -140,8 +150,6 @@ namespace SolverEngines
             }
 
             partNode.SetNode(engineType, node, nodeIndex, true);
-
-            SaveDatabase();
         }
 
         /// <summary>
@@ -152,70 +160,18 @@ namespace SolverEngines
         /// <param name="engine">Engine module to check.  Only used to find its declaring assembly.  Can be null</param>
         /// <param name="node">ConfigNode to check for versions and checksums</param>
         /// <returns></returns>
-        public static bool PluginUpdateCheck(ModuleEnginesSolver engine, ConfigNode node)
+        public static bool PluginUpdateCheck(object engine, ConfigNode node)
         {
             bool result = false;
             if (engine != null)
             {
                 Assembly assembly = engine.GetType().Assembly;
-                result |= (AssemblyVersion(assembly) != node.GetValue("DeclaringAssemblyVersion"));
-                result |= (AssemblyChecksum(assembly) != node.GetValue("DeclaringAssemblyChecksum"));
+                result |= (assembly.GetVersion().ToString() != node.GetValue("DeclaringAssemblyVersion"));
+                result |= (checksumCache.GetChecksum(assembly) != node.GetValue("DeclaringAssemblyChecksum"));
             }
             result |= (SolverEnginesVersion != node.GetValue("SolverEnginesVersion"));
             result |= (SolverEnginesAssemblyChecksum != node.GetValue("SolverEnginesAssemblyChecksum"));
             return result;
-        }
-
-        /// <summary>
-        /// Gets a string describing the version of an assembly
-        /// </summary>
-        /// <param name="assembly">Assembly to find the version of</param>
-        /// <returns>String describing the assembly version</returns>
-        public static string AssemblyVersion(Assembly assembly)
-        {
-            return assembly.GetName().Version.ToString();
-        }
-
-        /// <summary>
-        /// Get an MD5 checksum for a particular assembly
-        /// Finds the assembly file and uses it to generate a checksum
-        /// </summary>
-        /// <param name="assembly">Assembly to generate checksum for</param>
-        /// <returns>Checksum as a string.  Represented in hexadecimal separated by dashes</returns>
-        public static string AssemblyChecksum(Assembly assembly)
-        {
-            return FileHash(AssemblyPath(assembly));
-        }
-
-        /// <summary>
-        /// Find the file path of a particular assembly
-        /// </summary>
-        /// <param name="assembly">Assembly to find the path of</param>
-        /// <returns>File path of assembly</returns>
-        private static string AssemblyPath(Assembly assembly)
-        {
-            string codeBase = assembly.CodeBase;
-            UriBuilder uri = new UriBuilder(codeBase);
-            return Uri.UnescapeDataString(uri.Path);
-        }
-
-        /// <summary>
-        /// Generate and MD5 hash for a particular file
-        /// </summary>
-        /// <param name="filename">File to generate hash for</param>
-        /// <returns>Hash as a hexidecimal string separated by dashes</returns>
-        private static string FileHash(string filename)
-        {
-            byte[] hash = null;
-            using (var md5 = System.Security.Cryptography.MD5.Create())
-            {
-                using (var stream = System.IO.File.OpenRead(filename))
-                {
-                    hash = md5.ComputeHash(stream);
-                }
-            }
-
-            return System.BitConverter.ToString(hash);
         }
     }
 }
