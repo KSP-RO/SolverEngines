@@ -312,6 +312,9 @@ namespace SolverEngines.EnginesGUI
                     ApplicationLauncher.AppScenes.FLIGHT,
                     (Texture)GameDatabase.Instance.GetTexture("SolverEngines/Icons/EnginesIconStock", false));
 
+                if (ShowFlightGUIWindow)
+                    EnginesFlightButtonStock.SetTrue(false);
+
                 GameEvents.onGUIApplicationLauncherReady.Remove(CreateToolbarButtonStock);
             }
         }
