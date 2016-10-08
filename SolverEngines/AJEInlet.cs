@@ -97,7 +97,7 @@ namespace SolverEngines
 
         virtual public bool IntakeActive()
         {
-            return intakeEnabled && InAtmosphere() && !part.ShieldedFromAirstream && !(CheckUnderwater() && disableUnderwater);
+            return intakeEnabled && InAtmosphere() && !part.ShieldedFromAirstream && (intakeTransform != null) && !(CheckUnderwater() && disableUnderwater);
         }
 
         virtual public float UsableArea()
