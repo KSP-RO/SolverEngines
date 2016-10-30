@@ -104,7 +104,7 @@ namespace SolverEngines
             }
             else
             {
-                return -Vector3.Dot(VesselStockAeroForces(vessel), vessel.srf_velocity.normalized) * 1000d;
+                return -Vector3.Dot(VesselStockAeroForces(vessel), vessel.srf_velocity.normalized);
             }
         }
 
@@ -125,11 +125,12 @@ namespace SolverEngines
                 }
                 else
                 {
-                    List<ModuleLiftingSurface> liftModules = part.FindModulesImplementing<ModuleLiftingSurface>();
-                    for (int j = 0; j < liftModules.Count; j++)
+                    for (int j = 0; j < part.Modules.Count; j++)
                     {
-                        aeroForce += liftModules[j].liftForce;
-                        aeroForce += liftModules[j].dragForce;
+                        ModuleLiftingSurface module = part.Modules[j] as ModuleLiftingSurface;
+                        if (module == null) continue;
+                        aeroForce += module.liftForce;
+                        aeroForce += module.dragForce;
                     }
                 }
             }
