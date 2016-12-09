@@ -183,7 +183,7 @@ namespace SolverEngines
                     {
                         t = thrustTransforms[i];
                         Vector3 axis = useZaxis ? -t.forward : -t.up;
-                        part.Rigidbody.AddForceAtPosition(thrustRot * (axis * thrustTransformMultipliers[i] * finalThrust), t.position + t.rotation * thrustOffset, ForceMode.Force);
+                        part.AddForceAtPosition(thrustRot * (axis * thrustTransformMultipliers[i] * finalThrust), t.position + t.rotation * thrustOffset);
                     }
                 }
                 EngineExhaustDamage();
@@ -466,7 +466,7 @@ namespace SolverEngines
         {
             int eCount = emissiveAnims.Count;
             for (int i = 0; i < eCount; ++i)
-                emissiveAnims[i].SetState(val);
+                emissiveAnims[i].SetScalar((float)val);
         }
 
         protected void UpdateOverheatBox(double val, double minVal)

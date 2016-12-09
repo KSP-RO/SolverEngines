@@ -40,7 +40,7 @@ namespace SolverEngines.EnginesGUI
             if (ToolbarManager.ToolbarAvailable)
                 CreateToolbarButtonBlizzy();
             else
-                CreateToolbarButtonStock();
+                GameEvents.onGUIApplicationLauncherReady.Add(CreateToolbarButtonStock);
 
             Debug.Log("Toolbar manager available: " + ToolbarManager.ToolbarAvailable.ToString());
 
@@ -53,10 +53,6 @@ namespace SolverEngines.EnginesGUI
 
             GameEvents.onShowUI.Add(ShowUI);
             GameEvents.onHideUI.Add(HideUI);
-
-            // Just to make sure
-            if (!ToolbarManager.ToolbarAvailable)
-                CreateToolbarButtonStock();
         }
 
         private void OnDestroy()
@@ -315,6 +311,11 @@ namespace SolverEngines.EnginesGUI
                     DummyVoid,
                     ApplicationLauncher.AppScenes.FLIGHT,
                     (Texture)GameDatabase.Instance.GetTexture("SolverEngines/Icons/EnginesIconStock", false));
+
+                if (ShowFlightGUIWindow)
+                    EnginesFlightButtonStock.SetTrue(false);
+
+                GameEvents.onGUIApplicationLauncherReady.Remove(CreateToolbarButtonStock);
             }
         }
 
