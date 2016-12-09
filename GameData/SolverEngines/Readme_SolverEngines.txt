@@ -29,7 +29,18 @@ See AJE or RealFuels for examples of how to implement SolverEngines in practice.
 
 Changelog:
 
-V2.3
+v3.0
+
+* Update for KSP 1.2.2
+* Fix toolbar button not displaying
+* Fix thrust and drag displays in GUI
+* Fix fittable engines being fit every time even if they had no changes
+* **Breaking Change** Refactor EngineThermodynamics to be a struct, which makes it easier to use without adding GC alloc
+* Fix issue with negative mach transformations
+* **Breaking Change** Streamline engine fitting code
+* Only save fitted engine when parsing prefab, this prevents part upgrades from affecting the cache (however, upgraded parts will have to be fit every time)
+
+v2.3
 * Revert AssemblyVersion to 2.1.0.0 since latest releases of AJE and RF depend on it
 
 v2.2
