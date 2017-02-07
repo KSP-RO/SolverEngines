@@ -73,16 +73,6 @@ namespace SolverEngines.EngineFitting
 
             Debug.Log("[" + engine.EngineTypeName + "] Fitting params for engine " + engine.EnginePartName);
 
-            // Copy valid fit results from database - they might still be correct
-            if (node != null)
-            {
-                foreach (EngineParameterInfo entry in engineFitParameters)
-                {
-                    if (entry.IsFitResult())
-                        entry.SetValueFromNode(node);
-                }
-            }
-
             // Make sure everything has the correct value
             engine.PushFitParamsToSolver();
             engine.DoEngineFit();
