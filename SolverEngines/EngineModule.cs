@@ -361,7 +361,7 @@ namespace SolverEngines
             get
             {
                 // for now changed to throttle, but clamped...
-                float tmpOutput = 0.25f + currentThrottle * 0.75f;
+                float tmpOutput = currentThrottle;
 
                 //current throttle should never allow it to go out of 0 - 1 bounds, but if it does....
                 if (tmpOutput < 0)
