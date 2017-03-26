@@ -471,6 +471,12 @@ namespace SolverEngines
 
         protected void UpdateOverheatBox(double val, double minVal)
         {
+            if (!vessel.isActiveVessel)
+            {
+                overheatBox = null;
+                return;
+            }
+
             if (val >= (minVal - 0.00001d))
             {
                 if (overheatBox == null)
