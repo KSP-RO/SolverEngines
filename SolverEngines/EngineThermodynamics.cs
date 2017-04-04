@@ -393,6 +393,27 @@ namespace SolverEngines
         }
 
         /// <summary>
+        /// Initialize vacuum conditions
+        /// </summary>
+        /// <param name="usePlanetarium">If true (and planetarium available), get space temperature from planet (otherwise get from physics globals)</param>
+        /// <returns></returns>
+        public static EngineThermodynamics VacuumConditions(bool usePlanetarium = false)
+        {
+            double T = PhysicsGlobals.SpaceTemperature;
+
+            if (usePlanetarium && Planetarium.fetch != null)
+            {
+                CelestialBody home = Planetarium.fetch.Home;
+                if (home != null)
+                {
+                    T = home.GetTemperature(home.atmosphereDepth + 1d);
+                }
+            }
+
+            return new EngineThermodynamics(P: 0d, T: T);
+        }
+
+        /// <summary>
         /// Gets the speed of sound in isentropic flow for a given mach number
         /// </summary>
         /// <param name="mach">Mach to get speed of sound for</param>
