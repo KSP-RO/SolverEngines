@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace SolverEngines
 {
-    public abstract class ModuleAnimateSolverEngine<T> : PartModule where T : ModuleEnginesSolver
+    public abstract class ModuleAnimateSolverEngine<T> : PartModule where T : class, IEngineStatus
     {
         #region KSPFields
 
@@ -106,7 +104,7 @@ namespace SolverEngines
                     T engineModule = part.Modules[i] as T;
 
                     if (engineModule == null) continue;
-                    if (engineModule.engineID != engineID) continue;
+                    if (engineModule.engineName != engineID) continue;
 
                     return engineModule;
                 }
