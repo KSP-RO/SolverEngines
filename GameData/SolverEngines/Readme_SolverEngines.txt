@@ -29,6 +29,14 @@ See AJE or RealFuels for examples of how to implement SolverEngines in practice.
 
 Changelog:
 
+v3.1
+
+* Fix a bug with engine fitting where results would persist after data was deleted
+* Fix normalizedOutput to avoid phantom EC generation
+* Prevent NRE from the overheat box on a non-active vessel
+* Add vacuum conditions initializer for EngineThermodynamics
+* Allow animations on engines that don't inherit from ModuleEnginesSolver (mainly to take better advantage of interfaces)
+
 v3.0
 
 * Update for KSP 1.2.2
