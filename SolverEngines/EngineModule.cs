@@ -158,7 +158,11 @@ namespace SolverEngines
             }
 
             if (EngineIgnited && !flameout)
+            {
                 requestedThrottle = vessel.ctrlState.mainThrottle;
+                UpdatePropellantStatus();
+                lastPropellantFraction = PropellantAvailable() ? 1d : 0d;
+            }
             UpdateThrottle();
 
             UpdateFlightCondition();
@@ -259,9 +263,6 @@ namespace SolverEngines
             engineTemp = engineSolver.GetEngineTemp();
             tempRatio = engineTemp / maxEngineTemp;
             engineTempString = engineTemp.ToString("N0") + " K / " + maxEngineTemp.ToString("n0") + " K";
-
-            if (EngineIgnited) // slow, so only do this if we have to.
-                UpdatePropellantStatus();
 
             double thrustIn = engineSolver.GetThrust(); //in N
             double isp = engineSolver.GetIsp();
@@ -422,10 +423,7 @@ namespace SolverEngines
             flameout = false;
 
             UpdatePropellantStatus();
-            if (PropellantAvailable())
-                lastPropellantFraction = 1d;
-            else
-                lastPropellantFraction = 0d;
+            lastPropellantFraction = PropellantAvailable() ? 1d : 0d;
         }
         
         #endregion
