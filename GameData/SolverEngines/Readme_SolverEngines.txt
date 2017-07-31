@@ -29,6 +29,10 @@ See AJE or RealFuels for examples of how to implement SolverEngines in practice.
 
 Changelog:
 
+v3.2
+
+* Fix engines not allowing restart after running out of fuel and then fuel becoming available again
+
 v3.1
 
 * Fix a bug with engine fitting where results would persist after data was deleted
