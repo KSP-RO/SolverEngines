@@ -29,6 +29,10 @@ See AJE or RealFuels for examples of how to implement SolverEngines in practice.
 
 Changelog:
 
+v3.4
+
+* Recompile for KSP 1.3.1
+
 v3.3
 
 * Recompile for KSP 1.3
