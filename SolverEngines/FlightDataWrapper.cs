@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Reflection;
 using UnityEngine;
-using KSP;
 
 // This class uses DaMichel FAR wrapping code from Kerbal Flight Data, used with permission
 

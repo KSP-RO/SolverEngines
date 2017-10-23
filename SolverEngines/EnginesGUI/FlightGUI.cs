@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 using KSP.UI.Screens;
-using KSP;
 
 // Parts of this file are taken from FerramAerospaceResearch, Copyright 2015, Michael Ferrara, aka Ferram4, used with permission
 
@@ -303,8 +300,8 @@ namespace SolverEngines.EnginesGUI
             if (ApplicationLauncher.Ready && EnginesFlightButtonStock == null)
             {
                 EnginesFlightButtonStock = ApplicationLauncher.Instance.AddModApplication(
-                    onAppLaunchToggleOn,
-                    onAppLaunchToggleOff,
+                    OnAppLaunchToggleOn,
+                    OnAppLaunchToggleOff,
                     DummyVoid,
                     DummyVoid,
                     DummyVoid,
@@ -331,12 +328,12 @@ namespace SolverEngines.EnginesGUI
 
         private static void DummyVoid() { }
 
-        private static void onAppLaunchToggleOn()
+        private static void OnAppLaunchToggleOn()
         {
             ShowFlightGUIWindow = true;
         }
 
-        private static void onAppLaunchToggleOff()
+        private static void OnAppLaunchToggleOff()
         {
             ShowFlightGUIWindow = false;
         }

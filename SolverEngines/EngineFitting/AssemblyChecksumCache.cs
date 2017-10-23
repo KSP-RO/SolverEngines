@@ -9,8 +9,7 @@ namespace SolverEngines.EngineFitting
 
         public string GetChecksum(Assembly assembly)
         {
-            string checksum;
-            if (!checksums.TryGetValue(assembly, out checksum))
+            if (!checksums.TryGetValue(assembly, out string checksum))
             {
                 checksum = assembly.GetChecksum();
                 checksums[assembly] = checksum;

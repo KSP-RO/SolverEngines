@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-using KSP;
 
 // Parts of this file are taken from FerramAerospaceResearch, Copyright 2015, Michael Ferrara, aka Ferram4, used with permission
 
@@ -35,7 +31,7 @@ namespace SolverEngines
             base.OnStart();
 
             this.enabled = true;
-            updatePartsList();
+            UpdatePartsList();
 
             AmbientTherm = new EngineThermodynamics();
             InletTherm = new EngineThermodynamics();
@@ -51,7 +47,7 @@ namespace SolverEngines
             if (partsCount != newCount)
             {
                 partsCount = newCount;
-                updatePartsList();
+                UpdatePartsList();
             }
             
 
@@ -112,7 +108,7 @@ namespace SolverEngines
             }
         }
 
-        private void updatePartsList()
+        private void UpdatePartsList()
         {
             engineList.Clear();
             inletList.Clear();

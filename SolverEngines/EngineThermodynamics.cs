@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
-using KSP;
 
 namespace SolverEngines
 {
@@ -126,9 +122,11 @@ namespace SolverEngines
             double far = 0d,
             double massRatio = 1d)
         {
-            gas = new GasParameters(); // Necessary because reasons?
-            gas.P = P;
-            gas.T = T;
+            gas = new GasParameters
+            {
+                P = P,
+                T = T
+            };
             MassRatio = massRatio;
             Far = far;
 

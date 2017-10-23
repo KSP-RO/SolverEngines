@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using KSP.UI.Screens;
-using System.Reflection;
 using SolverEngines.EngineFitting;
 
 namespace SolverEngines

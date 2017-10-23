@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
-using KSP;
-
 // Parts of this class are taken from FerramAerospaceResearch, Copyright 2014, Michael Ferrara, aka Ferram4, used with permission
 
 namespace SolverEngines.EnginesGUI
