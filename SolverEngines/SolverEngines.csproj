@@ -54,6 +54,7 @@
     <Compile Include="PartExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SolverMathUtil.cs" />
+    <Compile Include="ThrustTransformInfo.cs" />
     <Compile Include="ToolbarWrapper.cs" />
   </ItemGroup>
   <ItemGroup>

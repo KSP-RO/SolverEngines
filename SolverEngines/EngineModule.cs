@@ -55,6 +55,8 @@ namespace SolverEngines
 
         protected List<ModuleAnimateHeat> emissiveAnims;
 
+        protected List<ThrustTransformInfo> thrustTransformInfos;
+
 
         // protected internals
         protected EngineSolver engineSolver = null;
@@ -112,6 +114,8 @@ namespace SolverEngines
             engineTemp = 288.15d;
             currentThrottle = 0f;
 
+            InitializeThrustTransforms();
+
             // Get emissives
             emissiveAnims = new List<ModuleAnimateHeat>();
             int mCount = part.Modules.Count;
@@ -126,11 +130,97 @@ namespace SolverEngines
         {
             base.OnLoad(node);
 
-            thrustTransforms = new List<Transform>(part.FindModelTransforms(thrustVectorTransformName)); // should be done by base, but no harm doing it again.
-            // -- will be done on Start - CreateEngine();
+            if (node.HasNode("THRUST_TRANSFORM"))
+            {
+                thrustTransformInfos = new List<ThrustTransformInfo>();
+
+                foreach (ConfigNode trfNode in node.nodes)
+                {
+                    if (trfNode.name != "THRUST_TRANSFORM") continue;
+
+                    ThrustTransformInfo info;
+
+                    try
+                    {
+                        info = new ThrustTransformInfo(trfNode);
+                        thrustTransformInfos.Add(info);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError($"[{GetType().Name}] exception while attempting to parse THRUST_TRANSFORM: {e}");
+                    }
+                }
+            }
+
+            InitializeThrustTransforms();
 
             CreateEngine();
             FitEngineIfNecessary();
+        }
+
+        protected void InitializeThrustTransforms()
+        {
+            if (thrustTransformInfos == null && part.partInfo != null && part.partInfo.partPrefab != null && part.partInfo.partPrefab != this)
+            {
+                ModuleEnginesSolver prefabModule = null;
+
+                for (int i = 0; i < part.partInfo.partPrefab.Modules.Count; i++)
+                {
+                    ModuleEnginesSolver m = part.partInfo.partPrefab.Modules[i] as ModuleEnginesSolver;
+                    if (m == null) continue;
+                    if (m.engineID != engineID) continue;
+
+                    prefabModule = m;
+                    break;
+                }
+
+                if (prefabModule == null)
+                {
+                    Debug.LogError($"[{GetType().Name}] unable to find prefab module");
+                    return;
+                }
+
+                thrustTransformInfos = prefabModule.thrustTransformInfos;
+            }
+
+            if (thrustTransformInfos == null) return;
+
+            thrustTransforms.Clear();
+            thrustTransformMultipliers.Clear();
+            float normalization = 0;
+
+            foreach(ThrustTransformInfo info in thrustTransformInfos)
+            {
+                Transform[] transforms = part.FindModelTransforms(info.transformName);
+
+                if (transforms.Length == 0)
+                {
+                    Debug.LogError($"[{GetType().Name}] no transforms named {info.transformName} found");
+                    continue;
+                }
+
+                if (info.multipliers != null && transforms.Length != info.multipliers.Length)
+                {
+                    Debug.LogError($"[{GetType().Name}] found {transforms.Length} transforms named {info.transformName} but got {info.multipliers.Length} multipliers");
+                    continue;
+                }
+
+                for (int i = 0; i < transforms.Length; i++)
+                {
+                    thrustTransforms.Add(transforms[i]);
+
+                    float multiplier = info.overallMultiplier;
+                    if (info.multipliers != null) multiplier *= info.multipliers[i];
+                    thrustTransformMultipliers.Add(multiplier);
+                    normalization += multiplier;
+                }
+            }
+
+            if (normalization == 0) normalization = 1;
+            for (int i = 0; i < thrustTransformMultipliers.Count; i++)
+            {
+                thrustTransformMultipliers[i] /= normalization;
+            }
         }
 
         new virtual public void FixedUpdate()
