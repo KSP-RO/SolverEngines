@@ -29,6 +29,10 @@ See AJE or RealFuels for examples of how to implement SolverEngines in practice.
 
 Changelog:
 
+v3.6
+
+* Recompile for KSP 1.4.1
+
 v3.5
 
 * Engine modules now support `THRUST_TRANSFORM` nodes to allow thrust transforms with multiple names
