@@ -35,4 +35,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("3.3.0.0")] // Don't change until breaking changes occur
 [assembly: AssemblyFileVersion("3.6.0.0")]
 
-[assembly: KSPAssembly("SolverEngines", 3, 6)]
+[assembly: KSPAssembly("SolverEngines", 3, 6, 0)]
