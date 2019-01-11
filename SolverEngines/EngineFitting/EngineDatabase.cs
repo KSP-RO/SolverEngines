@@ -33,7 +33,7 @@ namespace SolverEngines.EngineFitting
         public static readonly string SolverEnginesVersion = SolverEnginesAssembly.GetVersion().ToString();
         public static readonly string SolverEnginesAssemblyChecksum = SolverEnginesAssembly.GetChecksum();
 
-        private static readonly string configPath = FileUtil.JoinPath(SolverEnginesAssembly.GetDirectory(), "PluginData", "SolverEngines", "EngineDatabse.cfg");
+        private static readonly string configPath = FileUtil.JoinPath(SolverEnginesAssembly.GetDirectory(), "PluginData", "SolverEngines", "EngineDatabase.cfg");
         private static readonly string databaseName = "SolverEnginesDatabase";
         private static ConfigNode database = null;
 

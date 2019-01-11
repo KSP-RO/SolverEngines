@@ -50,6 +50,9 @@ namespace SolverEngines
 
         // internals
         protected double tempRatio = 0d, engineTemp = 288.15d;
+
+        public double GetEngineTemp => engineTemp;
+
         protected double lastPropellantFraction = 1d;
         protected ProtoStageIconInfo overheatBox = null;
 
@@ -289,6 +292,11 @@ namespace SolverEngines
             {
                 SetFlameout();
             }
+        }
+
+        public override bool CanStart()
+        {
+            return base.CanStart() || flameout;
         }
 
         public override void FXUpdate()
@@ -539,13 +547,11 @@ namespace SolverEngines
         #region Base Methods
         protected void SetFlameout()
         {
-            CLAMP = 0f;
             flameoutBar = float.MaxValue;
         }
         protected void SetUnflameout()
         {
             // hack to get around my not making CanStart() virtual
-            CLAMP = float.MaxValue;
             flameoutBar = 0f;
         }
 
