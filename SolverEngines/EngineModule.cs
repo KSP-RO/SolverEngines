@@ -413,6 +413,7 @@ namespace SolverEngines
                         lastPropellantFraction = PropellantAvailable() ? 1d : 0d;
                     }
                 }
+                this.propellantReqMet = (float)this.lastPropellantFraction * 100;
 
                 // set produced thrust
                 if (multiplyThrustByFuelFrac)
