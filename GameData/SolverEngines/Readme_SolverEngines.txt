@@ -28,6 +28,9 @@ SolverEngines includes a GUI to display useful information about engines in flig
 See AJE or RealFuels for examples of how to implement SolverEngines in practice.
 
 Changelog:
+v3.7.4
+* Update propellantReqMet field after call to RequestPropellant()
+
 v3.7.3
 * Recompiled for KSP 1.6
 * Don't touch CLAMP anymore (use CanStart() to check for flameout)
