@@ -60,15 +60,18 @@
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <Private>False</Private>
+      <HintPath>I:\Games\KSP_win_1.7.3\KSP_x64_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="System">
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine">
       <Private>False</Private>
+      <HintPath>I:\Games\KSP_win_1.7.3\KSP_x64_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
       <Private>False</Private>
+      <HintPath>I:\Games\KSP_win_1.7.3\KSP_x64_Data\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
