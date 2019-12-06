@@ -28,6 +28,9 @@ SolverEngines includes a GUI to display useful information about engines in flig
 See AJE or RealFuels for examples of how to implement SolverEngines in practice.
 
 Changelog:
+v3.7.5
+* Recompile for KSP 1.8.1
+
 v3.7.4.1
 * Recompile for KSP 1.7.3. Assembly version unchanged.
 
