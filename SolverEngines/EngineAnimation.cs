@@ -27,7 +27,7 @@ namespace SolverEngines
         public bool useAnimCurve = false;
 
         [KSPField]
-        public FloatCurve animCurve = new FloatCurve();
+        public FloatCurve animCurve;
 
         [KSPField(isPersistant = true)]
         public float animationState = 0f;
@@ -43,6 +43,12 @@ namespace SolverEngines
         #endregion
 
         #region Setup
+
+        public override void OnAwake()
+        {
+            animCurve = new FloatCurve();
+            base.OnAwake();
+        }
 
         public override void OnStart(PartModule.StartState state)
         {

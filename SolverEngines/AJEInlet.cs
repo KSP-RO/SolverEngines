@@ -8,7 +8,7 @@ namespace SolverEngines
         [KSPField(isPersistant = false, guiActive = true, guiActiveEditor = true)]
         public float Area;
         [KSPField(isPersistant = false, guiActive = false)]
-        public FloatCurve TPRCurve = new FloatCurve();
+        public FloatCurve TPRCurve;
         [KSPField(isPersistant = false, guiActive = false)]
         public bool useTPRCurve = true;
         [KSPField(isPersistant = false, guiActive = false)]
@@ -59,6 +59,12 @@ namespace SolverEngines
             }
 
             overallTPR = cosine * cosine * GetTPR(mach);
+        }
+
+        public override void OnAwake()
+        {
+            TPRCurve = new FloatCurve();
+            base.OnAwake();
         }
 
         public override void OnStart(StartState state)
