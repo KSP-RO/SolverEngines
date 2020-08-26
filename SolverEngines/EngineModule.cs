@@ -251,7 +251,9 @@ namespace SolverEngines
 
             if (EngineIgnited && !flameout)
             {
-                requestedThrottle = vessel.ctrlState.mainThrottle;
+                float controlThrottle = independentThrottle ? independentThrottlePercentage * 0.01f : vessel.ctrlState.mainThrottle;
+                float thrustLimiter = 0.01f * thrustPercentage;
+                requestedThrottle = controlThrottle * thrustLimiter;
                 UpdatePropellantStatus();
                 lastPropellantFraction = PropellantAvailable() ? 1d : 0d;
             }
