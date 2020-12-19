@@ -28,6 +28,11 @@ SolverEngines includes a GUI to display useful information about engines in flig
 See AJE or RealFuels for examples of how to implement SolverEngines in practice.
 
 Changelog:
+
+v3.8.0
+* Recompile for KSP 1.9.1
+* Take independent throttle and thrust limiter into account
+
 v3.7.5
 * Recompile for KSP 1.8.1
 
