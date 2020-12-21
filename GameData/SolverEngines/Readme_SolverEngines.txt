@@ -29,6 +29,9 @@ See AJE or RealFuels for examples of how to implement SolverEngines in practice.
 
 Changelog:
 
+v3.9.0
+* Recompile for KSP 1.10.1
+
 v3.8.0
 * Recompile for KSP 1.9.1
 * Take independent throttle and thrust limiter into account
