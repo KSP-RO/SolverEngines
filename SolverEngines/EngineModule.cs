@@ -20,6 +20,9 @@ namespace SolverEngines
         [KSPField(isPersistant = false, guiActive = true, guiName = "Current Throttle", guiFormat = "N2", guiUnits = "%")]
         public float actualThrottle;
 
+        [KSPField(guiActive = true, guiName = "Mass Flow", guiUnits = " kg/s", guiFormat = "F5")]
+        public float massFlowGui;
+
         [KSPField(isPersistant = false)]
         public double thrustUpperLimit = double.MaxValue;
 
@@ -74,6 +77,8 @@ namespace SolverEngines
 
         protected const double invg0 = 1d / 9.80665d;
 
+        protected bool flowKG = true;
+
         #region Properties
 
         public virtual string EnginePartName => part.name;
@@ -105,7 +110,9 @@ namespace SolverEngines
             currentThrottle = 0f;
             flameout = false;
             SetUnflameout();
-            Fields["fuelFlowGui"].guiUnits = " kg/sec";
+            Fields["fuelFlowGui"].guiActive = false;
+            Fields["massFlowGui"].guiUnits = " kg/s";
+            flowKG = true;
         }
 
         public override void OnStart(PartModule.StartState state)
@@ -231,6 +238,7 @@ namespace SolverEngines
             realIsp = 0f;
             finalThrust = 0f;
             fuelFlowGui = 0f;
+            massFlowGui = 0f;
             requestedThrottle = 0f;
 
             SetUnflameout();
@@ -377,6 +385,7 @@ namespace SolverEngines
                 }
                 realIsp = 0f;
                 fuelFlowGui = 0f;
+                massFlowGui = 0f;
                 producedThrust = 0d;
 
                 // If engine is not ignited, then UpdatePropellantStatus() will not be called so no point in updating propellant fraction
@@ -429,14 +438,25 @@ namespace SolverEngines
                     producedThrust = thrustUpperLimit + (producedThrust - thrustUpperLimit) * 0.1d;
 
                 // set fuel flow
+                fuelFlowGui = (float)(fuelFlow * mixtureDensityRecip / ratioSum);
                 if (fuelFlow > 1000d)
                 {
                     fuelFlow *= 0.001d;
-                    Fields["fuelFlowGui"].guiUnits = " ton/s";
+                    if (flowKG)
+                    {
+                        Fields["massFlowGui"].guiUnits = " ton/s";
+                        flowKG = false;
+                    }
                 }
                 else
-                    Fields["fuelFlowGui"].guiUnits = " kg/s";
-                fuelFlowGui = (float)fuelFlow;
+                {
+                    if (!flowKG)
+                    {
+                        Fields["massFlowGui"].guiUnits = " kg/s";
+                        flowKG = true;
+                    }
+                }
+                massFlowGui = (float)fuelFlow;
 
 
                 realIsp = (float)isp;
