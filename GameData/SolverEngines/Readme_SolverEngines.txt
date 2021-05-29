@@ -29,6 +29,9 @@ See AJE or RealFuels for examples of how to implement SolverEngines in practice.
 
 Changelog:
 
+v3.10.0
+* Respect KSP's use of fuelFlowGui field, instead use our own massFlowGui field. (Used for Waterfall compatibility etc.)
+
 v3.9.0
 * Recompile for KSP 1.10.1
 
