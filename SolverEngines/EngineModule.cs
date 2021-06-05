@@ -106,7 +106,6 @@ namespace SolverEngines
             CreateEngine();
             Need_Area = RequiredIntakeArea();
             Fields["Need_Area"].guiActiveEditor = Need_Area > 0f;
-            multIsp
             currentThrottle = 0f;
             flameout = false;
             SetUnflameout();
