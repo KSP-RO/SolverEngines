@@ -38,7 +38,7 @@ namespace SolverEngines
         [KSPField]
         public float autoignitionTemp = float.PositiveInfinity;
 
-        // Testflight interaction
+        // Just in case we need a double set of multipliers beyond the stock engine module's
         public double flowMult = 1d;
         public double ispMult = 1d;
 
@@ -106,7 +106,7 @@ namespace SolverEngines
             CreateEngine();
             Need_Area = RequiredIntakeArea();
             Fields["Need_Area"].guiActiveEditor = Need_Area > 0f;
-
+            multIsp
             currentThrottle = 0f;
             flameout = false;
             SetUnflameout();
@@ -360,7 +360,7 @@ namespace SolverEngines
 
             engineSolver.SetEngineState(ignited, lastPropellantFraction);
             engineSolver.SetFreestreamAndInlet(ambientTherm, inletTherm, altitude, mach, vel, oxygen, underwater);
-            engineSolver.CalculatePerformance(areaRatio, currentThrottle, flowMult, ispMult);
+            engineSolver.CalculatePerformance(areaRatio, currentThrottle, flowMult * multFlow, ispMult * multIsp);
         }
 
         virtual public void CalculateEngineParams()
