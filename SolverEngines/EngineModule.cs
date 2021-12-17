@@ -437,7 +437,7 @@ namespace SolverEngines
                     producedThrust = thrustUpperLimit + (producedThrust - thrustUpperLimit) * 0.1d;
 
                 // set fuel flow
-                fuelFlowGui = (float)(fuelFlow * mixtureDensityRecip / ratioSum);
+                fuelFlowGui = (float)(fuelFlow * 0.001d * mixtureDensityRecip / ratioSum); // Also in tons
                 if (fuelFlow > 1000d)
                 {
                     fuelFlow *= 0.001d;
@@ -488,7 +488,7 @@ namespace SolverEngines
                     tmpOutput = 0;
                 else if (tmpOutput > 1)
                     tmpOutput = 1;
-                
+
                 return tmpOutput;
             }
         }
@@ -538,13 +538,13 @@ namespace SolverEngines
         public override void Activate()
         {
             base.Activate();
-            
+
             flameout = false;
 
             UpdatePropellantStatus();
             lastPropellantFraction = PropellantAvailable() ? 1d : 0d;
         }
-        
+
         #endregion
 
         #region Info
