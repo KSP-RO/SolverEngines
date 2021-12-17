@@ -29,6 +29,9 @@ See AJE or RealFuels for examples of how to implement SolverEngines in practice.
 
 Changelog:
 
+v3.12.0
+* Fix a compatibility issue between SolverEngines-based engine modules and stock ModuleEngines, where SolverEngines used kilograms instead of tons for the `fuelFlowGui` field.
+
 v3.11.0
 * Respect KSP's flow and Isp multipliers as well as our own.
 
