@@ -67,6 +67,7 @@ namespace SolverEngines
 
         // protected internals
         protected EngineSolver engineSolver = null;
+        protected DeferredEngineExhaustDamage exhaustDamager = null;
 
         protected EngineThermodynamics ambientTherm = new EngineThermodynamics();
         protected EngineThermodynamics inletTherm = new EngineThermodynamics();
@@ -134,6 +135,8 @@ namespace SolverEngines
                     emissiveAnims.Add(pm as ModuleAnimateHeat);
 
             CreateEngineIfNecessary();
+            if (HighLogic.LoadedSceneIsFlight && !vessel.TryGetComponent<DeferredEngineExhaustDamage>(out exhaustDamager))
+                exhaustDamager = vessel.gameObject.AddComponent<DeferredEngineExhaustDamage>();
         }
 
         public override void OnLoad(ConfigNode node)
@@ -289,7 +292,7 @@ namespace SolverEngines
                         part.AddForceAtPosition(thrustRot * (axis * thrustTransformMultipliers[i] * finalThrust), t.position + t.rotation * thrustOffset);
                     }
                 }
-                EngineExhaustDamage();
+                DeferredEngineExhaustDamage();
 
                 double thermalFlux = tempRatio * tempRatio * heatProduction * vessel.VesselValues.HeatProduction.value * PhysicsGlobals.InternalHeatProductionFactor * part.thermalMass;
                 part.AddThermalFlux(thermalFlux);
@@ -300,6 +303,8 @@ namespace SolverEngines
                 SetFlameout();
             }
         }
+
+        public virtual void DeferredEngineExhaustDamage() => exhaustDamager?.AddEngine(this);
 
         public override bool CanStart()
         {
