@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using KSP.UI.Screens;
 using SolverEngines.EngineFitting;
+using UnityEngine.Profiling;
 
 namespace SolverEngines
 {
@@ -14,19 +15,19 @@ namespace SolverEngines
     {
         // base fields
 
-        [KSPField(isPersistant = false, guiActiveEditor = true, guiFormat = "F3")]
+        [KSPField(guiActiveEditor = true, guiFormat = "F3")]
         public float Need_Area;
 
-        [KSPField(isPersistant = false, guiActive = true, guiName = "Current Throttle", guiFormat = "N2", guiUnits = "%")]
+        [KSPField(guiActive = true, guiName = "Current Throttle", guiFormat = "N2", guiUnits = "%")]
         public float actualThrottle;
 
         [KSPField(guiActive = true, guiName = "Mass Flow", guiUnits = " kg/s", guiFormat = "F5")]
         public float massFlowGui;
 
-        [KSPField(isPersistant = false)]
+        [KSPField]
         public double thrustUpperLimit = double.MaxValue;
 
-        [KSPField(isPersistant = false)]
+        [KSPField]
         public bool multiplyThrustByFuelFrac = true;
 
         [KSPField]
@@ -44,15 +45,15 @@ namespace SolverEngines
 
         // engine temp stuff
         // fields
-        [KSPField(isPersistant = false)]
+        [KSPField]
         public double maxEngineTemp;
-        [KSPField(isPersistant = false, guiActive = true, guiName = "Eng. Internal Temp")]
-        public string engineTempString;
+        [KSPField(guiActive = true, guiName = "Eng. Internal Temp", guiFormat = "N0")]
+        public double engineTemp = 288.15d;
         [KSPField]
         public double tempGaugeMin = 0.8d;
 
         // internals
-        protected double tempRatio = 0d, engineTemp = 288.15d;
+        protected double tempRatio = 0d;
 
         public double GetEngineTemp => engineTemp;
 
@@ -66,6 +67,7 @@ namespace SolverEngines
 
         // protected internals
         protected EngineSolver engineSolver = null;
+        protected DeferredEngineExhaustDamage exhaustDamager = null;
 
         protected EngineThermodynamics ambientTherm = new EngineThermodynamics();
         protected EngineThermodynamics inletTherm = new EngineThermodynamics();
@@ -105,13 +107,14 @@ namespace SolverEngines
         {
             CreateEngine();
             Need_Area = RequiredIntakeArea();
-            Fields["Need_Area"].guiActiveEditor = Need_Area > 0f;
+            Fields[nameof(Need_Area)].guiActiveEditor = Need_Area > 0f;
             currentThrottle = 0f;
             flameout = false;
             SetUnflameout();
-            Fields["fuelFlowGui"].guiActive = false;
-            Fields["massFlowGui"].guiUnits = " kg/s";
+            Fields[nameof(fuelFlowGui)].guiActive = false;
+            Fields[nameof(massFlowGui)].guiUnits = " kg/s";
             flowKG = true;
+            Fields[nameof(engineTemp)].guiUnits = $" K / {maxEngineTemp:N0} K";
         }
 
         public override void OnStart(PartModule.StartState state)
@@ -127,12 +130,13 @@ namespace SolverEngines
 
             // Get emissives
             emissiveAnims = new List<ModuleAnimateHeat>();
-            int mCount = part.Modules.Count;
-            for (int i = 0; i < mCount; ++i)
-                if (part.Modules[i] is ModuleAnimateHeat)
-                    emissiveAnims.Add(part.Modules[i] as ModuleAnimateHeat);
+            foreach (var pm in part.Modules)
+                if (pm is ModuleAnimateHeat)
+                    emissiveAnims.Add(pm as ModuleAnimateHeat);
 
             CreateEngineIfNecessary();
+            if (HighLogic.LoadedSceneIsFlight && !vessel.TryGetComponent<DeferredEngineExhaustDamage>(out exhaustDamager))
+                exhaustDamager = vessel.gameObject.AddComponent<DeferredEngineExhaustDamage>();
         }
 
         public override void OnLoad(ConfigNode node)
@@ -147,12 +151,9 @@ namespace SolverEngines
                 {
                     if (trfNode.name != "THRUST_TRANSFORM") continue;
 
-                    ThrustTransformInfo info;
-
                     try
                     {
-                        info = new ThrustTransformInfo(trfNode);
-                        thrustTransformInfos.Add(info);
+                        thrustTransformInfos.Add(new ThrustTransformInfo(trfNode));
                     }
                     catch (Exception e)
                     {
@@ -291,7 +292,7 @@ namespace SolverEngines
                         part.AddForceAtPosition(thrustRot * (axis * thrustTransformMultipliers[i] * finalThrust), t.position + t.rotation * thrustOffset);
                     }
                 }
-                EngineExhaustDamage();
+                DeferredEngineExhaustDamage();
 
                 double thermalFlux = tempRatio * tempRatio * heatProduction * vessel.VesselValues.HeatProduction.value * PhysicsGlobals.InternalHeatProductionFactor * part.thermalMass;
                 part.AddThermalFlux(thermalFlux);
@@ -303,6 +304,8 @@ namespace SolverEngines
             }
         }
 
+        public virtual void DeferredEngineExhaustDamage() => exhaustDamager?.AddEngine(this);
+
         public override bool CanStart()
         {
             return base.CanStart() || flameout;
@@ -310,17 +313,21 @@ namespace SolverEngines
 
         public override void FXUpdate()
         {
+            Profiler.BeginSample("EngineSolver.FXUpdate");
             part.Effect(directThrottleEffectName, engineSolver.GetFXThrottle());
             part.Effect(spoolEffectName, engineSolver.GetFXSpool());
             part.Effect(runningEffectName, engineSolver.GetFXRunning());
+            Profiler.BeginSample("EngineSolver.FXUpdate.GetFXPower");
             part.Effect(powerEffectName, engineSolver.GetFXPower());
+            Profiler.EndSample();
+            Profiler.EndSample();
         }
 
         virtual protected void UpdateTemp()
         {
             if (tempRatio > 1d && !CheatOptions.IgnoreMaxTemperature)
             {
-                FlightLogger.eventLog.Add("[" + FormatTime(vessel.missionTime) + "] " + part.partInfo.title + " melted its internals from heat.");
+                FlightLogger.eventLog.Add($"[{FormatTime(vessel.missionTime)}] {part.partInfo.title} melted its internals from heat.");
                 part.explode();
             }
             else
@@ -338,7 +345,6 @@ namespace SolverEngines
 
             this.inletTherm = inletTherm;
             this.areaRatio = areaRatio;
-
         }
 
         public override void UpdateThrottle()
@@ -355,20 +361,24 @@ namespace SolverEngines
         virtual public void UpdateSolver(EngineThermodynamics ambientTherm, double altitude, Vector3d vel, double mach, bool ignited, bool oxygen, bool underwater)
         {
             // In flight, these are the same and this will just return
+            Profiler.BeginSample("EngineSolver.UpdateSolver");
             this.ambientTherm = ambientTherm;
 
             engineSolver.SetEngineState(ignited, lastPropellantFraction);
             engineSolver.SetFreestreamAndInlet(ambientTherm, inletTherm, altitude, mach, vel, oxygen, underwater);
+            Profiler.BeginSample("EngineSolver.UpdateSolver.CalculatePerformance");
             engineSolver.CalculatePerformance(areaRatio, currentThrottle, flowMult * multFlow, ispMult * multIsp);
+            Profiler.EndSample();
+            Profiler.EndSample();
         }
 
         virtual public void CalculateEngineParams()
         {
+            Profiler.BeginSample("EngineSolver.CalculateEngineParams");
             SetEmissive(engineSolver.GetEmissive());
             // Heat
             engineTemp = engineSolver.GetEngineTemp();
             tempRatio = engineTemp / maxEngineTemp;
-            engineTempString = engineTemp.ToString("N0") + " K / " + maxEngineTemp.ToString("n0") + " K";
 
             double thrustIn = engineSolver.GetThrust(); //in N
             double isp = engineSolver.GetIsp();
@@ -399,6 +409,7 @@ namespace SolverEngines
             }
             else
             {
+                Profiler.BeginSample("EngineSolver.CalculateEngineParams.RunningEngine");
                 // calc flow
                 double vesselValue = vessel.VesselValues.FuelUsage.value;
                 if (vesselValue == 0d)
@@ -416,7 +427,9 @@ namespace SolverEngines
                 {
                     if (massFlow > 0d)
                     {
+                        Profiler.BeginSample("EngineSolver.CalculateEngineParams.RunningEngine.RequestPropellant");
                         lastPropellantFraction = RequestPropellant(massFlow);
+                        Profiler.EndSample();
                     }
                     else
                     {
@@ -424,6 +437,7 @@ namespace SolverEngines
                     }
                 }
                 this.propellantReqMet = (float)this.lastPropellantFraction * 100;
+                Profiler.EndSample();
 
                 // set produced thrust
                 if (multiplyThrustByFuelFrac)
@@ -438,30 +452,20 @@ namespace SolverEngines
 
                 // set fuel flow
                 fuelFlowGui = (float)(fuelFlow * 0.001d * mixtureDensityRecip / ratioSum); // Also in tons
+                // If we're displaying in the wrong mode, swap
+                if (flowKG != (fuelFlow <= 1000))
+                {
+                    flowKG = fuelFlow <= 1000;
+                    Fields[nameof(massFlowGui)].guiUnits = flowKG ? " kg/s" : " ton/s";
+                }
                 if (fuelFlow > 1000d)
-                {
                     fuelFlow *= 0.001d;
-                    if (flowKG)
-                    {
-                        Fields["massFlowGui"].guiUnits = " ton/s";
-                        flowKG = false;
-                    }
-                }
-                else
-                {
-                    if (!flowKG)
-                    {
-                        Fields["massFlowGui"].guiUnits = " kg/s";
-                        flowKG = true;
-                    }
-                }
                 massFlowGui = (float)fuelFlow;
-
-
                 realIsp = (float)isp;
             }
 
             finalThrust = (float)producedThrust * vessel.VesselValues.EnginePower.value;
+            Profiler.EndSample();
         }
 
         virtual public bool PropellantAvailable()
