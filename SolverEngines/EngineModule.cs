@@ -306,6 +306,9 @@ namespace SolverEngines
 
         public virtual void DeferredEngineExhaustDamage() => exhaustDamager?.AddEngine(this);
 
+        // Original code: make virtual so ModuleEnginesRF can override
+        protected new virtual void UpdatePropellantStatus(bool doGauge = true) => base.UpdatePropellantStatus(doGauge);
+
         public override bool CanStart()
         {
             return base.CanStart() || flameout;
