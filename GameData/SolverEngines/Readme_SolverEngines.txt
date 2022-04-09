@@ -29,6 +29,9 @@ See AJE or RealFuels for examples of how to implement SolverEngines in practice.
 
 Changelog:
 
+v3.14.0
+* Add a new virtual UpdatePropellantStatus
+
 v3.13.0
 * Performance improvemennts
 
