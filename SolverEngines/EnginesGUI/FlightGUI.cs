@@ -91,7 +91,7 @@ namespace SolverEngines.EnginesGUI
             if (!GUIUtil.StylesInitialized)
                 GUIUtil.SetupStyles();
 
-            FlightWindowPos = GUILayout.Window(GUIUtil.FlightWindowID, FlightWindowPos, FlightWindowGUI, "Engines GUI", GUILayout.MinWidth(150));
+            FlightWindowPos = GUILayout.Window(GUIUtil.FlightWindowID, FlightWindowPos, FlightWindowGUI, LocalizationStrings.str_EnginesGUI, GUILayout.MinWidth(150)); // "Engines GUI"
 
             FlightGUISettings.OnSettingsWindowGUI();
             GUIUnitsSettings.OnUnitsSettingsWindowGUI();
@@ -108,25 +108,25 @@ namespace SolverEngines.EnginesGUI
 
             if (FlightGUISettings.ShowAmbientTemp)
             {
-                GUIUtil.FlightWindowField("Ambient Temperature", GUIUnitsSettings.TemperatureUnits.Format(vessel.atmosphericTemperature, GUIUnits.Temperature.kelvin));
+                GUIUtil.FlightWindowField(LocalizationStrings.str_AmbientTemperature, GUIUnitsSettings.TemperatureUnits.Format(vessel.atmosphericTemperature, GUIUnits.Temperature.kelvin)); // "Ambient Temperature"
                 windowDisplayField += counter;
             }
             counter *= 2;
             if (FlightGUISettings.ShowAmbientPressure)
             {
-                GUIUtil.FlightWindowField("Ambient Pressure", GUIUnitsSettings.PressureUnits.Format(vessel.staticPressurekPa, GUIUnits.Pressure.kPa));
+                GUIUtil.FlightWindowField(LocalizationStrings.str_AmbientPressure, GUIUnitsSettings.PressureUnits.Format(vessel.staticPressurekPa, GUIUnits.Pressure.kPa)); // "Ambient Pressure"
                 windowDisplayField += counter;
             }
             counter *= 2;
             if (FlightGUISettings.ShowRecoveryTemp && inAtmosphere && flightSys.InletArea > 0f && flightSys.EngineArea > 0f)
             {
-                GUIUtil.FlightWindowField("Recovery Temperature", GUIUnitsSettings.TemperatureUnits.Format(flightSys.InletTherm.T, GUIUnits.Temperature.kelvin));
+                GUIUtil.FlightWindowField(LocalizationStrings.str_RecoveryTemperature, GUIUnitsSettings.TemperatureUnits.Format(flightSys.InletTherm.T, GUIUnits.Temperature.kelvin)); // "Recovery Temperature"
                 windowDisplayField += counter;
             }
             counter *= 2;
             if (FlightGUISettings.ShowRecoveryPressure && inAtmosphere && flightSys.InletArea > 0f && flightSys.EngineArea > 0f)
             {
-                GUIUtil.FlightWindowField("Recovery Pressure", GUIUnitsSettings.PressureUnits.Format(flightSys.InletTherm.P, GUIUnits.Pressure.Pa));
+                GUIUtil.FlightWindowField(LocalizationStrings.str_RecoveryPressure, GUIUnitsSettings.PressureUnits.Format(flightSys.InletTherm.P, GUIUnits.Pressure.Pa)); // "Recovery Pressure"
                 windowDisplayField += counter;
             }
             counter *= 2;
@@ -149,21 +149,21 @@ namespace SolverEngines.EnginesGUI
                     inletPercentStyle.normal.textColor = inletPercentStyle.focused.textColor = inletPercentStyle.hover.textColor = inletPercentStyle.onNormal.textColor = inletPercentStyle.onFocused.textColor = inletPercentStyle.onHover.textColor = inletPercentStyle.onActive.textColor = inletPercentColor;
                 }
 
-                GUIUtil.FlightWindowField("Inlet", areaPercentString);
+                GUIUtil.FlightWindowField(LocalizationStrings.str_Inlet, areaPercentString); // "Inlet"
                 windowDisplayField += counter;
             }
             counter *= 2;
 
             if (FlightGUISettings.ShowTPR && inAtmosphere && flightSys.InletArea > 0f && flightSys.EngineArea > 0f)
             {
-                GUIUtil.FlightWindowField("TPR", flightSys.OverallTPR.ToString("P2"));
+                GUIUtil.FlightWindowField(LocalizationStrings.str_TPR, flightSys.OverallTPR.ToString("P2")); // "TPR"
                 windowDisplayField += counter;
             }
             counter *= 2;
 
             if (FlightGUISettings.ShowInletPressureRatio && inAtmosphere && flightSys.InletArea > 0f && flightSys.EngineArea > 0f)
             {
-                GUIUtil.FlightWindowField("Inlet Pressure Ratio", (flightSys.InletTherm.P / flightSys.AmbientTherm.P).ToString("F2"));
+                GUIUtil.FlightWindowField(LocalizationStrings.str_InletPressureRatio, (flightSys.InletTherm.P / flightSys.AmbientTherm.P).ToString("F2")); //"Inlet Pressure Ratio" 
                 windowDisplayField += counter;
             }
             counter *= 2;
@@ -188,7 +188,7 @@ namespace SolverEngines.EnginesGUI
 
             if (FlightGUISettings.ShowThrust)
             {
-                GUIUtil.FlightWindowField("Thrust", GUIUnitsSettings.ForceUnits.Format(totalThrust, GUIUnits.Force.kN));
+                GUIUtil.FlightWindowField(LocalizationStrings.str_Thrust, GUIUnitsSettings.ForceUnits.Format(totalThrust, GUIUnits.Force.kN)); // "Thrust"
                 windowDisplayField += counter;
             }
             counter *= 2;
@@ -199,7 +199,7 @@ namespace SolverEngines.EnginesGUI
                 if (totalThrust > 0d && weight > 0d)
                     TWR = totalThrust / (FlightGlobals.getGeeForceAtPosition(vessel.CoM).magnitude * vessel.GetTotalMass());
 
-                GUIUtil.FlightWindowField("TWR", TWR.ToString("F2"));
+                GUIUtil.FlightWindowField(LocalizationStrings.str_TWR, TWR.ToString("F2")); // "TWR"
                 windowDisplayField += counter;
             }
             counter *= 2;
@@ -211,7 +211,7 @@ namespace SolverEngines.EnginesGUI
                 if (FlightDataWrapper.VesselDynPreskPa(vessel) > 0.01d)
                     tdr = totalThrust / totalDrag;
 
-                GUIUtil.FlightWindowField("Thrust / Drag", tdr.ToString("G3"));
+                GUIUtil.FlightWindowField(LocalizationStrings.str_ThrustDrag, tdr.ToString("G3")); // "Thrust / Drag"
                 windowDisplayField += counter;
             }
             counter *= 2;
@@ -222,7 +222,7 @@ namespace SolverEngines.EnginesGUI
                 if (totalThrust > 0d && totalMDot > 0d)
                     Isp = totalThrust / totalMDot; // kN/(kg/s) = km/s
 
-                GUIUtil.FlightWindowField("Specific Impulse", GUIUnitsSettings.IspUnits.Format(Isp, GUIUnits.Isp.km__s));
+                GUIUtil.FlightWindowField(LocalizationStrings.str_SpecificImpulse, GUIUnitsSettings.IspUnits.Format(Isp, GUIUnits.Isp.km__s)); // "Specific Impulse"
                 windowDisplayField += counter;
             }
             counter *= 2;
@@ -232,7 +232,7 @@ namespace SolverEngines.EnginesGUI
                 if (totalThrust > 0d && totalMDot > 0d)
                     SFC = totalMDot / totalThrust; // (kg/s)/kN
 
-                GUIUtil.FlightWindowField("TSFC", GUIUnitsSettings.TSFCUnits.Format(SFC, GUIUnits.TSFC.kg__kN_s));
+                GUIUtil.FlightWindowField(LocalizationStrings.str_TSFC, GUIUnitsSettings.TSFCUnits.Format(SFC, GUIUnits.TSFC.kg__kN_s)); // "TSFC"
                 windowDisplayField += counter;
             }
 
@@ -240,8 +240,8 @@ namespace SolverEngines.EnginesGUI
                 FlightWindowPos.height = 0;
 
             GUILayout.BeginHorizontal();
-            FlightGUISettings.ShowSettingsWindow = GUILayout.Toggle(FlightGUISettings.ShowSettingsWindow, "Settings", GUIUtil.ButtonToggle, GUIUtil.normalWidth);
-            GUIUnitsSettings.ShowUnitsSettingsWindow = GUILayout.Toggle(GUIUnitsSettings.ShowUnitsSettingsWindow, "Units", GUIUtil.ButtonToggle, GUIUtil.smallWidth);
+            FlightGUISettings.ShowSettingsWindow = GUILayout.Toggle(FlightGUISettings.ShowSettingsWindow, LocalizationStrings.str_Settings, GUIUtil.ButtonToggle, GUIUtil.normalWidth); // "Settings"
+            GUIUnitsSettings.ShowUnitsSettingsWindow = GUILayout.Toggle(GUIUnitsSettings.ShowUnitsSettingsWindow, LocalizationStrings.str_Units, GUIUtil.ButtonToggle, GUIUtil.smallWidth); // "Units"
             GUILayout.EndHorizontal();
 
             GUILayout.EndVertical();
