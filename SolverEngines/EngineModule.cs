@@ -4,6 +4,7 @@ using UnityEngine;
 using KSP.UI.Screens;
 using SolverEngines.EngineFitting;
 using UnityEngine.Profiling;
+using KSP.Localization;
 
 namespace SolverEngines
 {
@@ -18,10 +19,10 @@ namespace SolverEngines
         [KSPField(guiActiveEditor = true, guiFormat = "F3")]
         public float Need_Area;
 
-        [KSPField(guiActive = true, guiName = "Current Throttle", guiFormat = "N2", guiUnits = "%")]
+        [KSPField(guiActive = true, guiName = "#SolverEngines_CurrentThrottle", guiFormat = "N2", guiUnits = "%")] // "Current Throttle"
         public float actualThrottle;
 
-        [KSPField(guiActive = true, guiName = "Mass Flow", guiUnits = " kg/s", guiFormat = "F5")]
+        [KSPField(guiActive = true, guiName = "#SolverEngines_MassFlow", guiUnits = " kg/s", guiFormat = "F5")] // "Mass Flow"
         public float massFlowGui;
 
         [KSPField]
@@ -47,7 +48,7 @@ namespace SolverEngines
         // fields
         [KSPField]
         public double maxEngineTemp;
-        [KSPField(guiActive = true, guiName = "Eng. Internal Temp", guiFormat = "N0")]
+        [KSPField(guiActive = true, guiName = "#SolverEngines_EngineInternalTemp", guiFormat = "N0")] // "Eng. Internal Temp"
         public double engineTemp = 288.15d;
         [KSPField]
         public double tempGaugeMin = 0.8d;
@@ -330,7 +331,7 @@ namespace SolverEngines
         {
             if (tempRatio > 1d && !CheatOptions.IgnoreMaxTemperature)
             {
-                FlightLogger.eventLog.Add($"[{FormatTime(vessel.missionTime)}] {part.partInfo.title} melted its internals from heat.");
+                FlightLogger.eventLog.Add($"[{FormatTime(vessel.missionTime)}] {Localizer.Format("#SolverEngines_PartMelted", part.partInfo.title)}"); // {part.partInfo.title} melted its internals from heat.
                 part.explode();
             }
             else
@@ -606,7 +607,7 @@ namespace SolverEngines
                     overheatBox = part.stackIcon.DisplayInfo();
                     overheatBox.SetMsgBgColor(XKCDColors.DarkRed.A(0.6f));
                     overheatBox.SetMsgTextColor(XKCDColors.OrangeYellow.A(0.6f));
-                    overheatBox.SetMessage("Eng. Int.");
+                    overheatBox.SetMessage(LocalizationStrings.str_EIT); // "Eng. Int."
                     overheatBox.SetProgressBarBgColor(XKCDColors.DarkRed.A(0.6f));
                     overheatBox.SetProgressBarColor(XKCDColors.OrangeYellow.A(0.6f));
                 }

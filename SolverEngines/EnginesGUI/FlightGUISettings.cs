@@ -32,7 +32,7 @@ namespace SolverEngines.EnginesGUI
         {
             if (ShowSettingsWindow)
             {
-                SettingsWindowPos = GUILayout.Window(GUIUtil.SettingsWindowID, SettingsWindowPos, SettingsWindowGUI, "Engines Flight GUI Settings", GUILayout.MinWidth(150));
+                SettingsWindowPos = GUILayout.Window(GUIUtil.SettingsWindowID, SettingsWindowPos, SettingsWindowGUI, LocalizationStrings.str_EnginesFlightGUISettings, GUILayout.MinWidth(150)); // "Engines Flight GUI Settings"
             }
         }
 
@@ -40,17 +40,17 @@ namespace SolverEngines.EnginesGUI
         {
             GUILayout.BeginVertical();
 
-            GUIUtil.SettingsWindowToggle("Show Ambient Temperature", ref ShowAmbientTemp);
-            GUIUtil.SettingsWindowToggle("Show Ambient Pressure", ref ShowAmbientPressure);
-            GUIUtil.SettingsWindowToggle("Show Recovery Temperature", ref ShowRecoveryTemp);
-            GUIUtil.SettingsWindowToggle("Show Recovery Pressure", ref ShowRecoveryPressure);
-            GUIUtil.SettingsWindowToggle("Show Inlet Percentage", ref ShowInletPercent);
-            GUIUtil.SettingsWindowToggle("Show Total Pressure Recovery", ref ShowTPR);
-            GUIUtil.SettingsWindowToggle("Show Thrust", ref ShowThrust);
-            GUIUtil.SettingsWindowToggle("Show Thrust to Weight Ratio", ref ShowTWR);
-            GUIUtil.SettingsWindowToggle("Show Thrust / Drag", ref ShowTDR);
-            GUIUtil.SettingsWindowToggle("Show Isp", ref ShowIsp);
-            GUIUtil.SettingsWindowToggle("Show TSFC", ref ShowTSFC);
+            GUIUtil.SettingsWindowToggle(LocalizationStrings.str_ShowAmbientTemperature, ref ShowAmbientTemp); // "Show Ambient Temperature"
+            GUIUtil.SettingsWindowToggle(LocalizationStrings.str_ShowAmbientPressure, ref ShowAmbientPressure); // "Show Ambient Pressure"
+            GUIUtil.SettingsWindowToggle(LocalizationStrings.str_ShowRecoveryTemperature, ref ShowRecoveryTemp); // "Show Recovery Temperature"
+            GUIUtil.SettingsWindowToggle(LocalizationStrings.str_ShowRecoveryPressure, ref ShowRecoveryPressure); // "Show Recovery Pressure"
+            GUIUtil.SettingsWindowToggle(LocalizationStrings.str_ShowInletPercentage, ref ShowInletPercent); // "Show Inlet Percentage"
+            GUIUtil.SettingsWindowToggle(LocalizationStrings.str_ShowTotalPressureRecovery, ref ShowTPR); // "Show Total Pressure Recovery"
+            GUIUtil.SettingsWindowToggle(LocalizationStrings.str_ShowThrust, ref ShowThrust); // "Show Thrust"
+            GUIUtil.SettingsWindowToggle(LocalizationStrings.str_ShowThrusttoWeightRatio, ref ShowTWR); // "Show Thrust to Weight Ratio"
+            GUIUtil.SettingsWindowToggle(LocalizationStrings.str_ShowThrustDrag, ref ShowTDR); // "Show Thrust / Drag"
+            GUIUtil.SettingsWindowToggle(LocalizationStrings.str_ShowIsp, ref ShowIsp); // "Show Isp"
+            GUIUtil.SettingsWindowToggle(LocalizationStrings.str_ShowTSFC, ref ShowTSFC); // "Show TSFC"
 
             GUILayout.EndVertical();
 

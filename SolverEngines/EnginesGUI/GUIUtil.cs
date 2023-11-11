@@ -76,7 +76,7 @@ namespace SolverEngines.EnginesGUI
         public static void UnitSelectionGrid<T>(ref GUIUnits.Units<T> units)
         {
             GUILayout.BeginVertical();
-            GUILayout.Box(units.UnitTypeName + " Units:", LeftLabel, normalWidth);
+            GUILayout.Box(units.UnitTypeName + $" {LocalizationStrings.str_Units}:", LeftLabel, normalWidth); // Units
             units = GUIUnits.UnitsAtIndexGUI<T>(GUILayout.SelectionGrid(units.IndexGUI, GUIUnits.UnitNamesGUI<T>(), GUIUnits.UnitsCountGUI<T>(), ButtonToggle, wideWidth));
             GUILayout.EndHorizontal();
         }

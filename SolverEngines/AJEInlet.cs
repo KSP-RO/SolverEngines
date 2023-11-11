@@ -18,7 +18,7 @@ namespace SolverEngines
 
         [KSPField(isPersistant = false, guiActive = true, guiFormat = "F3")]
         public float cosine = 1f;
-        [KSPField(isPersistant = false, guiActive = true, guiName = "Overall TPR", guiFormat = "P2")]
+        [KSPField(isPersistant = false, guiActive = true, guiName = "#SolverEngines_OverallTPR", guiFormat = "P2")] // "Overall TPR"
         public float overallTPR = 1f;
 
         // replace some original things
@@ -121,12 +121,12 @@ namespace SolverEngines
 
         public string GetModuleTitle()
         {
-            return "AJE Inlet";
+            return LocalizationStrings.str_AJEInlet; // "AJE Inlet"
         }
 
         public string GetPrimaryField()
         {
-            return "<b>Intake Area: </b>" + (Area).ToString("N4") + " m^2";
+            return $"<b>{LocalizationStrings.str_IntakeArea}: </b>" + (Area).ToString("N4") + " m^2"; // Intake Area
         }
 
         public override string GetInfo()
@@ -150,8 +150,8 @@ namespace SolverEngines
                     Debug.LogWarning("AJEInlet on part " + part.name + " has inletDescription but no inletTitle.  inletDescription will not be displayed.");
             }
 
-            output += "<b>Intake Resource: </b>" + resourceName + "\n";
-            output += "<b>Intake Area: </b>" + (Area).ToString("N4") + " m^2";
+            output += $"<b>{LocalizationStrings.str_IntakeResource}: </b>" + resourceName + "\n"; // Intake Resource
+            output += $"<b>{LocalizationStrings.str_IntakeArea}: </b>" + (Area).ToString("N4") + " m^2"; // Intake Area
 
             return output;
         }
