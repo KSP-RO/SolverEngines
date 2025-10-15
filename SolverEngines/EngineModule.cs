@@ -45,7 +45,7 @@ namespace SolverEngines
 
         // engine temp stuff
         // fields
-        [KSPField]
+        [KSPField(guiActive = true, guiName = "Max. Engine Internal Temp", guiFormat = "N0")]
         public double maxEngineTemp;
         [KSPField(guiActive = true, guiName = "Eng. Internal Temp", guiFormat = "N0")]
         public double engineTemp = 288.15d;
