@@ -15,7 +15,7 @@ namespace SolverEngines
     {
         // base fields
 
-        [KSPField(guiActiveEditor = true, guiFormat = "F3")]
+        [KSPField(guiActiveEditor = true, guiName = "Required Area", guiFormat = "F3", guiUnits = " m^2")]
         public float Need_Area;
 
         [KSPField(guiActive = true, guiName = "Current Throttle", guiFormat = "N2", guiUnits = "%")]
