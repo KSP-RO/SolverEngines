@@ -233,3 +233,7 @@ $RECYCLE.BIN/
 PluginData/
 *.zip
 .vs
+
+# Build output. Release builds come from CI
+*.dll
+*.mdb
