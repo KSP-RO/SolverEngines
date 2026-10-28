@@ -1,4 +1,5 @@
 ﻿using System;
+using KSP.Localization;
 using UnityEngine;
 
 namespace SolverEngines
@@ -24,6 +25,9 @@ namespace SolverEngines
         // replace some original things
         new public float airFlow = 0f;
         new public float airSpeedGui;
+
+        private const int tprSamplesPerMach = 100;
+        private const int tprMaxSampledMach = 20;
 
         virtual public float GetTPR(double Mach)
         {
@@ -151,9 +155,85 @@ namespace SolverEngines
             }
 
             output += $"<b>{LocalizationStrings.str_IntakeResource}: </b>" + resourceName + "\n";
-            output += $"<b>{LocalizationStrings.str_IntakeArea}: </b>" + (Area).ToString("N4") + " m^2";
+            output += $"<b>{LocalizationStrings.str_IntakeArea}: </b>" + (Area).ToString("N4") + " m^2\n";
+            output += $"\n{GetTPRInfo()}";
 
             return output;
+        }
+
+        // TPR from the curve only, without the off-axis cosine losses applied in flight.
+        private string GetTPRInfo()
+        {
+            float[] samples = SampleTPR();
+            int peak = FindTPRPeakIndex(samples);
+
+            string output = $"<b>{LocalizationStrings.str_PressureRecovery}</b>\n";
+            output += $"{FormatTPRPeak(samples, peak)}\n";
+            output += FormatTPRBand(samples, peak, 0.9f);
+            output += FormatTPRBand(samples, peak, 0.5f);
+
+            for (int i = peak + 1; i < samples.Length; i++)
+            {
+                if (samples[i] <= 0f)
+                {
+                    output += Localizer.Format("#SolverEngines_TPRZeroAt", FormatSampleMach(i));
+                    break;
+                }
+            }
+
+            return output.TrimEnd('\n');
+        }
+
+        private float[] SampleTPR()
+        {
+            float[] samples = new float[tprMaxSampledMach * tprSamplesPerMach + 1];
+            for (int i = 0; i < samples.Length; i++)
+                samples[i] = GetTPR((double)i / tprSamplesPerMach);
+            return samples;
+        }
+
+        private static int FindTPRPeakIndex(float[] samples)
+        {
+            int peak = 0;
+            for (int i = 1; i < samples.Length; i++)
+            {
+                if (samples[i] > samples[peak])
+                    peak = i;
+            }
+            return peak;
+        }
+
+        // Shows a Mach range when the peak is flat, e.g. isentropic inlets at 100% up to Mach 1.
+        private static string FormatTPRPeak(float[] samples, int peak)
+        {
+            return Localizer.Format("#SolverEngines_TPRPeak", $"{samples[peak]:P0}", FormatTPRRange(samples, peak, samples[peak] - 1e-5f));
+        }
+
+        private static string FormatTPRBand(float[] samples, int peak, float threshold)
+        {
+            if (samples[peak] < threshold)
+                return string.Empty;
+            return $"{Localizer.Format("#SolverEngines_TPRAbove", $"{threshold:P0}", FormatTPRRange(samples, peak, threshold))}\n";
+        }
+
+        // Contiguous Mach range around the peak where TPR stays at or above the threshold.
+        private static string FormatTPRRange(float[] samples, int peak, float threshold)
+        {
+            int min = peak;
+            int max = peak;
+            while (min > 0 && samples[min - 1] >= threshold)
+                min--;
+            while (max < samples.Length - 1 && samples[max + 1] >= threshold)
+                max++;
+
+            string minMach = FormatSampleMach(min);
+            string maxMach = FormatSampleMach(max);
+            return minMach == maxMach ? minMach : $"{minMach} - {maxMach}";
+        }
+
+        private static string FormatSampleMach(int index)
+        {
+            return ((float)index / tprSamplesPerMach).ToString("F1");
         }
 
 
