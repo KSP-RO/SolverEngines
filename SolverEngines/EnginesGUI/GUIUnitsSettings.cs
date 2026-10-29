@@ -23,7 +23,7 @@ namespace SolverEngines.EnginesGUI
         {
             if (ShowUnitsSettingsWindow)
             {
-                UnitsSettingsWindowPos = GUILayout.Window(GUIUtil.UnitsSettingsWindowID, UnitsSettingsWindowPos, UnitsSettingsWindowGUI, LocalizationStrings.str_EnginesGUIUnitsSettings, GUILayout.MinWidth(150)); // "Engines GUI Units Settings"
+                UnitsSettingsWindowPos = GUILayout.Window(GUIUtil.UnitsSettingsWindowID, UnitsSettingsWindowPos, UnitsSettingsWindowGUI, LocalizationStrings.str_EnginesGUIUnitsSettings, GUILayout.MinWidth(150));
             }
         }
 
