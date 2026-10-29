@@ -130,7 +130,7 @@ namespace SolverEngines
 
         public string GetPrimaryField()
         {
-            return $"<b>{LocalizationStrings.str_IntakeArea}: </b>" + (Area).ToString("N4") + " m^2";
+            return $"<b>{LocalizationStrings.str_IntakeArea}: </b>" + (Area).ToString("N4") + " m²\n";
         }
 
         public override string GetInfo()
@@ -155,7 +155,7 @@ namespace SolverEngines
             }
 
             output += $"<b>{LocalizationStrings.str_IntakeResource}: </b>" + resourceName + "\n";
-            output += $"<b>{LocalizationStrings.str_IntakeArea}: </b>" + (Area).ToString("N4") + " m^2\n";
+            output += $"<b>{LocalizationStrings.str_IntakeArea}: </b>" + (Area).ToString("N4") + " m²\n";
             output += $"\n{GetTPRInfo()}";
 
             return output;

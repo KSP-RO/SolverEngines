@@ -153,7 +153,7 @@ namespace SolverEngines.EnginesGUI
         public sealed class TSFC
         {
             public static readonly Units<TSFC> s__m = new Units<TSFC>("s/m", format: "G3", showGUI : false);
-            public static readonly Units<TSFC> __s = new Units<TSFC>("s^-1", multiplier: 9.81f, format: "G3", showGUI : false); // possibly useful for conversions from Isp
+            public static readonly Units<TSFC> __s = new Units<TSFC>("s^-1", displayName: "s⁻¹", multiplier: 9.81f, format: "G3", showGUI : false); // possibly useful for conversions from Isp
             public static readonly Units<TSFC> kg__kgf_h = new Units<TSFC>("kg/kgf-h", multiplier: 9.81f * 3600f, format: "F2");
             public static readonly Units<TSFC> g__kN_s = new Units<TSFC>("g/kN-s", multiplier: 1e6f, format: "F1");
             public static readonly Units<TSFC> kg__kN_s = new Units<TSFC>("kg/kN-s", multiplier: 1e3f, format: "G3", showGUI : false);

@@ -450,7 +450,7 @@ namespace SolverEngines
         /// <summary>
         /// Calculates isentropic mass flow for a given area and mach number
         /// </summary>
-        /// <param name="area">Flow cross section, m^2</param>
+        /// <param name="area">Flow cross section, m²</param>
         /// <param name="mach">Mach number of flow</param>
         /// <returns>Mass flow, kg/s</returns>
         public double CalculateMassFlow(double area, double mach)
@@ -463,7 +463,7 @@ namespace SolverEngines
         /// </summary>
         /// <param name="mdot">Mass flow, kg/s</param>
         /// <param name="mach">Mach number</param>
-        /// <returns>Cross section area, m^2</returns>
+        /// <returns>Cross section area, m²</returns>
         public double CalculateFlowArea(double mdot, double mach)
         {
             return mdot / P * Math.Sqrt(T * R / Gamma) / mach * Math.Pow(0.5d * (Gamma - 1d) * mach * mach + 1d, 0.5 * (Gamma + 1d) / (Gamma - 1d));
@@ -496,7 +496,7 @@ namespace SolverEngines
                 "EngineThermodynamics(",
                 $"T={T:F2}K,",
                 $"P={P:F2}Pa,",
-                $"Rho={Rho:F2}kg/m3,",
+                $"Rho={Rho:F2}kg/m³,",
                 $"Fuel/Air={Far:F3},",
                 $"Cp={Cp:F2}J/kg-K,",
                 $"Cv={Cv:F2}J/kg-K,",
