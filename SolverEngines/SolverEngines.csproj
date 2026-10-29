@@ -56,6 +56,7 @@
     <Compile Include="EnginesGUI\GUIUnits.cs" />
     <Compile Include="EnginesGUI\GUIUnitsSettings.cs" />
     <Compile Include="EnginesGUI\GUIUtil.cs" />
+    <Compile Include="LocalizationStrings.cs" />
     <Compile Include="PartExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SolverMathUtil.cs" />
