@@ -34,6 +34,7 @@ namespace SolverEngines
         public static readonly string str_Units = Localizer.Format("#SolverEngines_Units");
         public static readonly string str_IntakeArea = Localizer.Format("#SolverEngines_IntakeArea");
         public static readonly string str_IntakeResource = Localizer.Format("#SolverEngines_IntakeResource");
+        public static readonly string str_PressureRecovery = Localizer.Format("#SolverEngines_PressureRecovery");
         public static readonly string str_EIT = Localizer.Format("#SolverEngines_EIT");
     }
 }
