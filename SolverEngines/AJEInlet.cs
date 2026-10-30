@@ -6,7 +6,7 @@ namespace SolverEngines
 {
     public class AJEInlet : ModuleResourceIntake, IModuleInfo
     {
-        [KSPField(isPersistant = false, guiActive = true, guiActiveEditor = true)]
+        [KSPField(isPersistant = false, guiActive = true, guiActiveEditor = true, guiName = "#SolverEngines_IntakeArea", guiUnits = " m²", guiFormat = "N3")]
         public float Area;
         [KSPField(isPersistant = false, guiActive = false)]
         public FloatCurve TPRCurve = new FloatCurve();
@@ -17,7 +17,8 @@ namespace SolverEngines
         [KSPField(isPersistant = false, guiActive = false)]
         public string inletDescription;
 
-        [KSPField(isPersistant = false, guiActive = true, guiFormat = "F3")]
+        // Cosine of the angle between airflow and intake facing. Has a floor at low speed, see FakeCosine.
+        [KSPField(isPersistant = false, guiActive = true, guiName = "#SolverEngines_AirflowAlignment", guiFormat = "P1")]
         public float cosine = 1f;
         [KSPField(isPersistant = false, guiActive = true, guiName = "#SolverEngines_OverallTPR", guiFormat = "P2")]
         public float overallTPR = 1f;
@@ -130,7 +131,7 @@ namespace SolverEngines
 
         public string GetPrimaryField()
         {
-            return $"<b>{LocalizationStrings.str_IntakeArea}: </b>" + (Area).ToString("N4") + " m²\n";
+            return $"<b>{LocalizationStrings.str_IntakeArea}: </b>" + (Area).ToString("N3") + " m²\n";
         }
 
         public override string GetInfo()
@@ -155,7 +156,7 @@ namespace SolverEngines
             }
 
             output += $"<b>{LocalizationStrings.str_IntakeResource}: </b>" + resourceName + "\n";
-            output += $"<b>{LocalizationStrings.str_IntakeArea}: </b>" + (Area).ToString("N4") + " m²\n";
+            output += $"<b>{LocalizationStrings.str_IntakeArea}: </b>" + (Area).ToString("N3") + " m²\n";
             output += $"\n{GetTPRInfo()}";
 
             return output;
