@@ -29,6 +29,13 @@ See AJE or RealFuels for examples of how to implement SolverEngines in practice.
 
 Changelog:
 
+v3.15.0
+* Add localization support & Chinese Translation
+* Add TPR info
+* Localize engine Need_Area field
+* Localize intake cosine, format area values better
+* Use superscript characters
+
 v3.14.0
 * Add a new virtual UpdatePropellantStatus
 
